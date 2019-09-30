@@ -1,0 +1,13 @@
+package dev.reactant.resourcestirrer.config
+
+/**
+ * Model class of resource pack meta file
+ */
+class ResourcePackMeta {
+    var pack: PackInfo = PackInfo();
+
+    class PackInfo {
+        var pack_format: Int = 4;
+        var description: String = "Resource stirrer generated resource pack";
+    }
+}
