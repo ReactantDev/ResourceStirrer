@@ -34,7 +34,7 @@ repositories {
 
 dependencies {
     compileOnly(kotlin("stdlib-jdk8", kotlinVersion))
-    compileOnly("dev.reactant:reactant:0.1.3")
+    compileOnly("dev.reactant:reactant:0.1.4")
     compileOnly("org.spigotmc:spigot-api:1.14.2-R0.1-SNAPSHOT")
 
     implementation("net.lingala.zip4j:zip4j:2.1.3")
