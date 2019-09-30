@@ -5,13 +5,10 @@ import org.bukkit.Material
 import java.io.InputStream
 
 interface ItemResource {
-    val modelResourcePath: String
     val baseItem: Material?
     val baseResource: ItemResource?
     val predicate: Map<String, Any>
 
-    val resourceLoader: ResourceLoader
-    val modelFileInputStream: InputStream
     val identifier: String
 
     val rootBaseItem: Material
@@ -20,4 +17,14 @@ interface ItemResource {
             baseItem != null -> baseItem!!
             else -> throw IllegalStateException("A item resource must have either baseItem or baseResource")
         }
+
+    /**
+     * Write the model file of item resource to the destination path
+     */
+    fun writeModelFile(path: String)
+
+    /**
+     * Write the textures files of item resource to the destination folder path
+     */
+    fun writeTextureFiles(path: String)
 }

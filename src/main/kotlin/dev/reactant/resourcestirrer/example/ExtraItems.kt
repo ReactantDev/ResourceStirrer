@@ -8,7 +8,7 @@ internal enum class ExtraItems(val itemResource: ModelItemResource) : ItemResour
 
     LIQUID(object : ModelItemResource(
             "liquid",
-            "f70a4208-e450-4bf0-a3a5-f786e1df5650",
+            "dev.reactant.resourcestirrer.example:liquid",
             Material.NETHER_STAR) {}),
 }
 

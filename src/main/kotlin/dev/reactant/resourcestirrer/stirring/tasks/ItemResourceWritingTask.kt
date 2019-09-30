@@ -23,18 +23,20 @@ internal class ItemResourceWritingTask(
     private val parser = JsonParser();
 
     override fun start(stirringPlan: StirringPlan): Completable = Completable.fromCallable {
-        ResourceStirrer.logger.info("Item resources: ${stirringPlan.stirrerMetaLock.content.itemResourceCustomMetaLock}")
         stirringPlan.stirrerMetaLock.content.itemResourceCustomMetaLock
-                .filter { itemResourceService.getItem(it.key)!!.baseItem != null }
+                .filter { itemResourceService.getItem(it.key) == null }
+                .forEach { ResourceStirrer.logger.warn("A resource custom data lock lost their reference: ${it.key}") }
+        stirringPlan.stirrerMetaLock.content.itemResourceCustomMetaLock
+                .filter { itemResourceService.getItem(it.key)?.baseItem != null }
                 .forEach { (itemResourceIdentifier, _) ->
                     val itemResource = itemResourceService.getItem(itemResourceIdentifier)!!
-                    val itemLoader = itemResource.resourceLoader
-                    val resourcePath = itemResource.modelResourcePath;
                     val assetsPath = "${cacheFolder.absolutePath}/assets/${ResourceStirringTask.ASSETS_NAME_SPACE}";
+                    val textureFolderPath = "$assetsPath/textures/$itemResourceIdentifier"
+                    val modelFilePath = "$assetsPath/models/$itemResourceIdentifier.json"
 
                     // Copy model file
-                    val copiedModelFile = File("$assetsPath/models/$itemResourceIdentifier.json");
-                    itemResource.modelFileInputStream.outputTo(copiedModelFile)
+                    val copiedModelFile = File(modelFilePath);
+                    itemResource.writeModelFile(copiedModelFile.absolutePath)
 
                     // Replace model file var
                     copiedModelFile.readText()
@@ -42,11 +44,7 @@ internal class ItemResourceWritingTask(
                             .let { copiedModelFile.writeText(it) }
 
                     // Copy textures file
-                    itemLoader.getResourceFiles(resourcePath).forEach { filePath ->
-                        itemLoader.getResourceFile(filePath)
-                                ?.let { CopyingFile(it, "$assetsPath/textures/$itemResourceIdentifier/${filePath.removePrefix(resourcePath)}") }
-                                ?.let { it.inputStream.outputTo(File(it.fileName)) }
-                    }
+                    itemResource.writeModelFile(textureFolderPath)
                 }
         rewriteMainModelFile(stirringPlan).blockingAwait()
     }
