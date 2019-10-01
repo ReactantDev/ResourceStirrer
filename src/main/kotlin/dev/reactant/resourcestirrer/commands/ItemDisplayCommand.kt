@@ -32,8 +32,6 @@ internal class ItemDisplayCommand(
                     item {
                         displayItem = createItemStack(resource.rootBaseItem) {
                             itemMeta {
-                                ReactantCore.logger.warn(hasCustomModelData());
-                                ReactantCore.logger.warn(customMeta);
                                 setCustomModelData(customMeta.split("-").last().toInt())
                             }
                         }

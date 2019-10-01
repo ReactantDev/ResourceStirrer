@@ -6,7 +6,7 @@ import dev.reactant.resourcestirrer.resourceloader.ClassLoaderResourceLoader
 import dev.reactant.resourcestirrer.resourceloader.ResourceLoader
 
 @Component
-class ItemResourceManagingService {
+class ItemResourceManagingService() {
     private val _identifierResources = HashMap<String, ItemResource>()
     public val identifierResources: Map<String, ItemResource> get() = _identifierResources
 

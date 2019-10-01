@@ -36,14 +36,14 @@ abstract class ModelItemResource(
             : this(modelResourcePath, itemResourceIdentifier, null, baseResource, mapOf())
 
     override fun writeModelFile(path: String) {
-        this.modelFileInputStream.outputTo(File(path))
+        this.modelFileInputStream.use { it.outputTo(File(path)) }
     }
 
     override fun writeTextureFiles(path: String) {
         resourceLoader.getResourceFiles(modelResourcePath).forEach { filePath ->
             resourceLoader.getResourceFile(filePath)
                     ?.let { ItemResourceWritingTask.CopyingFile(it, "$path/${filePath.removePrefix(modelResourcePath)}") }
-                    ?.let { it.inputStream.outputTo(File(it.fileName)) }
+                    ?.let { it.inputStream.use { input -> input.outputTo(File(it.fileName)) } }
         }
     }
 }
