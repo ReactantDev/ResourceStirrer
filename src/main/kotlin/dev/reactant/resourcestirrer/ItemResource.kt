@@ -1,8 +1,6 @@
 package dev.reactant.resourcestirrer
 
-import dev.reactant.resourcestirrer.resourceloader.ResourceLoader
 import org.bukkit.Material
-import java.io.InputStream
 
 interface ItemResource {
     val baseItem: Material?

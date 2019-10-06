@@ -17,6 +17,8 @@ class StirringPlan() {
     lateinit var resourceStirrerConfig: Config<ResourceStirrerConfig>
     lateinit var baseResourcePack: File
 
+    lateinit var resourcePackSha1: ByteArray;
+
     /**
      * Allocate a new custom meta if not exist in MetaLock
      */

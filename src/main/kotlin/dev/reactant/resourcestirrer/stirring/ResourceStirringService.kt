@@ -1,5 +1,6 @@
 package dev.reactant.resourcestirrer.stirring
 
+import com.google.gson.JsonParser
 import dev.reactant.reactant.core.component.Component
 import dev.reactant.reactant.core.component.lifecycle.LifeCycleControlAction
 import dev.reactant.reactant.core.component.lifecycle.LifeCycleHook
@@ -17,7 +18,9 @@ import dev.reactant.resourcestirrer.stirring.tasks.ResourcePackDefaultMetaGenera
 import dev.reactant.resourcestirrer.stirring.tasks.ResourcePackingTask
 import io.reactivex.Completable
 import io.reactivex.Single
+import io.reactivex.subjects.PublishSubject
 import java.io.File
+import java.io.FileReader
 
 @Component
 internal class ResourceStirringService(
@@ -29,16 +32,28 @@ internal class ResourceStirringService(
         private val defaultMetaGeneratingTask: ResourcePackDefaultMetaGeneratingTask,
         private val packingTask: ResourcePackingTask
 ) : LifeCycleHook, LifeCycleInspector {
+    private val parser = JsonParser();
     override fun afterBulkActionComplete(action: LifeCycleControlAction) {
         if (action != LifeCycleControlAction.Initialize) return
         startStirring().blockingAwait()
     }
 
-    var lastStirringPlan: StirringPlan? = null;
+    val latestStirringPlan get() = _latestStirringPlan;
+    private var _latestStirringPlan: StirringPlan? = null;
+
+    val stirringCompleteHook = PublishSubject.create<StirringPlan>()
+
+    private val stirringTasks = arrayListOf(
+            baseResourceCopyingTask,
+            itemResourceWritingTask,
+            defaultMetaGeneratingTask,
+            packingTask
+    );
 
     fun startStirring(): Completable {
-        return Single.fromCallable(::StirringPlan)
-                .flatMap(::prepareStirringPlan)
+        return Completable.fromAction { ResourceStirrer.logger.info("Start resource stirring") }
+                .toSingle(::StirringPlan) // Create new stirring plan
+                .flatMap(::prepareStirringPlan) // Fill in configuration
                 .doOnSuccess { stirringPlan ->
                     // Remove previous allocated identifiers if conflict with first priority identifier
                     stirringPlan.stirrerMetaLock.content.itemResourceCustomMetaLock
@@ -52,18 +67,14 @@ internal class ResourceStirringService(
                     // Save changes on lock
                     stirringPlan.stirrerMetaLock.save().blockingAwait()
                 }
-                .doOnSuccess { lastStirringPlan = it }
+                .doOnSuccess { _latestStirringPlan = it }
                 .flatMap { stirringPlan ->
                     Single.fromCallable {
                         // stirring tasks
-                        arrayOf(
-                                baseResourceCopyingTask,
-                                itemResourceWritingTask,
-                                defaultMetaGeneratingTask,
-                                packingTask
-                        ).map { task -> task.start(stirringPlan).blockingAwait() }
+                        stirringTasks.map { task -> task.start(stirringPlan).blockingAwait() }
                     }
                 }
+                .doFinally { stirringCompleteHook.onNext(_latestStirringPlan!!) }
                 .ignoreElement();
     }
 
@@ -81,14 +92,22 @@ internal class ResourceStirringService(
             .map { stirringPlan }
 
     private fun readBaseResourcePackUsedIdentifiers(): Single<Set<String>> {
-        val baseResourcePack = baseResourcePack;
-        if (!baseResourcePack.exists()) return Single.just(setOf());
-        if (!baseResourcePack.isDirectory) {
-            ResourceStirrer.logger.warn("Base resource pack must be a folder, ignored.")
-            return Single.just(setOf());
+        return Single.fromCallable {
+            val baseResourcePack = baseResourcePack;
+            val resourcePackItemFolder = File("${baseResourcePack.absolutePath}/assets/minecraft/models/item");
+
+            if (resourcePackItemFolder.exists()) setOf()
+            else resourcePackItemFolder.listFiles()!!.map { file ->
+                FileReader(file).use { reader ->
+                    val resourcePackItemModel = parser.parse(reader).asJsonObject;
+                    resourcePackItemModel.getAsJsonArray("overrides")
+                            .map { it.asJsonObject }
+                            .filter { it.has("custom_model_data") }
+                            .map { it.get("custom_model_data") }
+                            .map { "${file.nameWithoutExtension}-$it" }
+                }
+            }.flatten().toSet()
         }
-        return Single.just(setOf())
-        //todo: read all model file
     }
 
     private val baseResourcePack: File get() = File("${ResourceStirrer.configFolder}/BaseResource/")

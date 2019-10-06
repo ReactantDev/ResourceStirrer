@@ -6,23 +6,25 @@ import dev.reactant.resourcestirrer.stirring.StirringPlan
 import io.reactivex.Completable
 import net.lingala.zip4j.ZipFile
 import net.lingala.zip4j.model.ZipParameters
+import org.apache.commons.codec.binary.Hex
 import org.apache.commons.codec.digest.DigestUtils
 import java.io.File
 import java.io.FileInputStream
 
 @Component
 internal class ResourcePackingTask : ResourceStirringTask {
-    override fun start(stirringPlan: StirringPlan): Completable = Completable.fromCallable {
+    override fun start(stirringPlan: StirringPlan): Completable = Completable.fromAction {
         File(stirringPlan.resourceStirrerConfig.content.outputPath).let { if (it.exists()) it.delete() }
         val zip = ZipFile(stirringPlan.resourceStirrerConfig.content.outputPath);
 
-        zip.addFolder(cacheFolder,ZipParameters().also { it.isIncludeRootFolder = false })
+        zip.addFolder(cacheFolder, ZipParameters().also { it.isIncludeRootFolder = false })
 //        cacheFolder.listFiles()?.forEach { file ->
 //            if (file.isFile) zip.addFile(file, ZipParameters().also { it.fileNameInZip = file.name })
 //            else if (file.isDirectory) zip.addFolder(file, ZipParameters().also { it.defaultFolderPath = "test" })
 //        }
         ResourceStirrer.logger.info("Generating resource pack sha1...")
-        val sha1 = DigestUtils.sha1Hex(FileInputStream(zip.file))
-        ResourceStirrer.logger.info("Resource pack sha1 is $sha1");
+        val sha1 = DigestUtils.sha1(FileInputStream(zip.file))
+        ResourceStirrer.logger.info("Resource pack sha1 is ${Hex.encodeHexString(sha1)}");
+        stirringPlan.resourcePackSha1 = sha1;
     }
 }

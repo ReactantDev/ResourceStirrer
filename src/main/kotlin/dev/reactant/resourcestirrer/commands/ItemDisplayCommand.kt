@@ -1,7 +1,6 @@
 package dev.reactant.resourcestirrer.commands
 
 
-import dev.reactant.reactant.core.ReactantCore
 import dev.reactant.reactant.extra.command.ReactantCommand
 import dev.reactant.reactant.ui.ReactantUIService
 import dev.reactant.reactant.ui.kits.item
@@ -27,7 +26,7 @@ internal class ItemDisplayCommand(
         val player = sender as Player;
         uiService.createUI(player, "Items") {
             itemResourceManagingService.identifierResources.forEach { (identifier,resource)->
-                val customMeta = resourceStirringService.lastStirringPlan?.stirrerMetaLock?.content?.itemResourceCustomMetaLock?.get(identifier);
+                val customMeta = resourceStirringService._latestStirringPlan?.stirrerMetaLock?.content?.itemResourceCustomMetaLock?.get(identifier);
                 if (customMeta != null) {
                     item {
                         displayItem = createItemStack(resource.rootBaseItem) {
