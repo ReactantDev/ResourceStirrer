@@ -1,6 +1,7 @@
 package dev.reactant.resourcestirrer.stirring
 
 import com.google.gson.JsonParser
+import dev.reactant.reactant.core.ReactantCore
 import dev.reactant.reactant.core.component.Component
 import dev.reactant.reactant.core.component.lifecycle.LifeCycleControlAction
 import dev.reactant.reactant.core.component.lifecycle.LifeCycleHook
@@ -18,6 +19,7 @@ import dev.reactant.resourcestirrer.stirring.tasks.ResourcePackDefaultMetaGenera
 import dev.reactant.resourcestirrer.stirring.tasks.ResourcePackingTask
 import io.reactivex.Completable
 import io.reactivex.Single
+import io.reactivex.schedulers.Schedulers
 import io.reactivex.subjects.PublishSubject
 import java.io.File
 import java.io.FileReader
@@ -36,6 +38,17 @@ internal class ResourceStirringService(
     override fun afterBulkActionComplete(action: LifeCycleControlAction) {
         if (action != LifeCycleControlAction.Initialize) return
         startStirring().blockingAwait()
+    }
+
+
+    fun test() {
+         configService.loadOrDefault(jsonParserService, "path.json", ::ResourceStirrerConfig)
+                 .subscribeOn(Schedulers.io())
+                 .observeOn(ReactantCore.mainThreadScheduler)
+                 .subscribe { config->
+                     config.content
+                     // do what u wanna do
+                 }
     }
 
     val latestStirringPlan get() = _latestStirringPlan;
@@ -66,6 +79,7 @@ internal class ResourceStirringService(
 
                     // Save changes on lock
                     stirringPlan.stirrerMetaLock.save().blockingAwait()
+
                 }
                 .doOnSuccess { _latestStirringPlan = it }
                 .flatMap { stirringPlan ->

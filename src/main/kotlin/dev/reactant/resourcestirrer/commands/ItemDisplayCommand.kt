@@ -25,18 +25,18 @@ internal class ItemDisplayCommand(
         if (sender !is Player) stderr.out("Only player can use this command");
         val player = sender as Player;
         uiService.createUI(player, "Items") {
-            itemResourceManagingService.identifierResources.forEach { (identifier,resource)->
-                val customMeta = resourceStirringService._latestStirringPlan?.stirrerMetaLock?.content?.itemResourceCustomMetaLock?.get(identifier);
-                if (customMeta != null) {
-                    item {
-                        displayItem = createItemStack(resource.rootBaseItem) {
-                            itemMeta {
-                                setCustomModelData(customMeta.split("-").last().toInt())
+            itemResourceManagingService.identifierResources
+                    .filter { it.value.allocatedCustomModelData != null }
+                    .forEach { (identifier, resource) ->
+                        item {
+                            displayItem = createItemStack(resource.rootBaseItem) {
+                                itemMeta {
+                                    setDisplayName(identifier)
+                                    setCustomModelData(resource.allocatedCustomModelData)
+                                }
                             }
                         }
                     }
-                }
-            }
         }.show(player)
     }
 

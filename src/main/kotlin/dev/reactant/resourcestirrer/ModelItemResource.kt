@@ -20,6 +20,8 @@ abstract class ModelItemResource(
 
     val resourceLoader = ClassLoaderResourceLoader(this.javaClass.classLoader)
 
+    override var allocatedCustomModelData: Int? = null
+
     override val identifier: String
         get() = _identifier ?: this.javaClass.canonicalName
 

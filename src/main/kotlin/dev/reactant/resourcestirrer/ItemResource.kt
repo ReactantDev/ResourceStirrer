@@ -1,5 +1,6 @@
 package dev.reactant.resourcestirrer
 
+import dev.reactant.reactant.utils.content.item.createItemStack
 import org.bukkit.Material
 
 interface ItemResource {
@@ -8,6 +9,9 @@ interface ItemResource {
     val predicate: Map<String, Any>
 
     val identifier: String
+
+    var allocatedCustomModelData: Int?
+
 
     val rootBaseItem: Material
         get() = when {
@@ -25,4 +29,16 @@ interface ItemResource {
      * Write the textures files of item resource to the destination folder path
      */
     fun writeTextureFiles(path: String)
+
+    /**
+     * Create a similar itemstack which have the allocated custom model data, but do not included the extra predicates
+     */
+    @JvmDefault
+    val similarItemStack
+        get() = createItemStack(rootBaseItem) {
+            itemMeta {
+                setCustomModelData(allocatedCustomModelData
+                        ?: throw IllegalStateException("The custom model data of $identifier is not allocated yet"))
+            }
+        }
 }
