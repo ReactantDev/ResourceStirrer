@@ -25,7 +25,7 @@ import java.io.File
 import java.io.FileReader
 
 @Component
-internal class ResourceStirringService(
+class ResourceStirringService private constructor(
         private val itemResourceService: ItemResourceManagingService,
         private val configService: ConfigService,
         private val jsonParserService: JsonParserService,
@@ -42,13 +42,13 @@ internal class ResourceStirringService(
 
 
     fun test() {
-         configService.loadOrDefault(jsonParserService, "path.json", ::ResourceStirrerConfig)
-                 .subscribeOn(Schedulers.io())
-                 .observeOn(ReactantCore.mainThreadScheduler)
-                 .subscribe { config->
-                     config.content
-                     // do what u wanna do
-                 }
+        configService.loadOrDefault(jsonParserService, "path.json", ::ResourceStirrerConfig)
+                .subscribeOn(Schedulers.io())
+                .observeOn(ReactantCore.mainThreadScheduler)
+                .subscribe { config ->
+                    config.content
+                    // do what u wanna do
+                }
     }
 
     val latestStirringPlan get() = _latestStirringPlan;
@@ -110,8 +110,8 @@ internal class ResourceStirringService(
             val baseResourcePack = baseResourcePack;
             val resourcePackItemFolder = File("${baseResourcePack.absolutePath}/assets/minecraft/models/item");
 
-            if (resourcePackItemFolder.exists()) setOf()
-            else resourcePackItemFolder.listFiles()!!.map { file ->
+            if (!resourcePackItemFolder.exists()) setOf()
+            else (resourcePackItemFolder.listFiles()?: arrayOf()).map { file ->
                 FileReader(file).use { reader ->
                     val resourcePackItemModel = parser.parse(reader).asJsonObject;
                     resourcePackItemModel.getAsJsonArray("overrides")
@@ -124,7 +124,7 @@ internal class ResourceStirringService(
         }
     }
 
-    private val baseResourcePack: File get() = File("${ResourceStirrer.configFolder}/BaseResource/")
+    private val baseResourcePack: File get() = File("${ResourceStirrer.configFolder}/base/")
 
 
     private val lockPath get() = "${ResourceStirrer.configFolder}/stirrer-meta-lock.json"
