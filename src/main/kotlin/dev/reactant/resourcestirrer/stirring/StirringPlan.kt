@@ -2,6 +2,7 @@ package dev.reactant.resourcestirrer.stirring
 
 import dev.reactant.reactant.service.spec.config.Config
 import dev.reactant.resourcestirrer.ItemResource
+import dev.reactant.resourcestirrer.ResourceStirrer
 import dev.reactant.resourcestirrer.config.ResourceStirrerConfig
 import dev.reactant.resourcestirrer.config.StirrerMetaLock
 import org.bukkit.Material
@@ -23,11 +24,12 @@ class StirringPlan() {
      * Allocate a new custom meta if not exist in MetaLock
      */
     public fun addItemResource(itemResource: ItemResource, itemResourceIdentifier: String) {
-        if (!stirrerMetaLock.content.itemResourceCustomMetaLock.containsKey(itemResourceIdentifier)) {
-            val customMeta = searchUsableCustomMeta(itemResource.rootBaseItem);
+        var customMeta = stirrerMetaLock.content.itemResourceCustomMetaLock[itemResourceIdentifier]?.split("-")?.last()?.toInt()
+        if (customMeta==null) {
+            customMeta = searchUsableCustomMeta(itemResource.rootBaseItem);
             stirrerMetaLock.content.itemResourceCustomMetaLock[itemResourceIdentifier] = "${itemResource.rootBaseItem.name.toLowerCase()}-$customMeta";
-            itemResource.allocatedCustomModelData = customMeta;
         }
+        itemResource.allocatedCustomModelData = customMeta;
     }
 
     private fun searchUsableCustomMeta(material: Material): Int {
