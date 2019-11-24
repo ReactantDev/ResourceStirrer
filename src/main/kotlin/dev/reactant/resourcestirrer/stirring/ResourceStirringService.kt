@@ -1,7 +1,6 @@
 package dev.reactant.resourcestirrer.stirring
 
 import com.google.gson.JsonParser
-import dev.reactant.reactant.core.ReactantCore
 import dev.reactant.reactant.core.component.Component
 import dev.reactant.reactant.core.component.lifecycle.LifeCycleControlAction
 import dev.reactant.reactant.core.component.lifecycle.LifeCycleHook
@@ -19,7 +18,6 @@ import dev.reactant.resourcestirrer.stirring.tasks.ResourcePackDefaultMetaGenera
 import dev.reactant.resourcestirrer.stirring.tasks.ResourcePackingTask
 import io.reactivex.Completable
 import io.reactivex.Single
-import io.reactivex.schedulers.Schedulers
 import io.reactivex.subjects.PublishSubject
 import java.io.File
 import java.io.FileReader
@@ -40,21 +38,11 @@ class ResourceStirringService private constructor(
         startStirring().blockingAwait()
     }
 
-
-    fun test() {
-        configService.loadOrDefault(jsonParserService, "path.json", ::ResourceStirrerConfig)
-                .subscribeOn(Schedulers.io())
-                .observeOn(ReactantCore.mainThreadScheduler)
-                .subscribe { config ->
-                    config.content
-                    // do what u wanna do
-                }
-    }
-
     val latestStirringPlan get() = _latestStirringPlan;
     private var _latestStirringPlan: StirringPlan? = null;
 
-    val stirringCompleteHook = PublishSubject.create<StirringPlan>()
+    private val _stirringCompleteHook = PublishSubject.create<StirringPlan>()
+    val stirringCompleteHook = _stirringCompleteHook.hide()
 
     private val stirringTasks = arrayListOf(
             baseResourceCopyingTask,
@@ -88,7 +76,7 @@ class ResourceStirringService private constructor(
                         stirringTasks.map { task -> task.start(stirringPlan).blockingAwait() }
                     }
                 }
-                .doFinally { stirringCompleteHook.onNext(_latestStirringPlan!!) }
+                .doFinally { _stirringCompleteHook.onNext(_latestStirringPlan!!) }
                 .ignoreElement();
     }
 

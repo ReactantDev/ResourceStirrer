@@ -1,6 +1,7 @@
-import org.jetbrains.dokka.gradle.DokkaTask
+import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 import java.net.URI
+import org.jetbrains.dokka.gradle.DokkaTask
 
 val isSnapshot = true
 group = "dev.reactant"
@@ -75,22 +76,39 @@ val sourcesJar by tasks.registering(Jar::class) {
     from(sourceSets.main.get().allSource)
 }
 
+val shadowJar = (tasks["shadowJar"] as ShadowJar).apply {
+    relocate("net.lingala.zip4j", "dev.reactant.resourcestirrer.zip4j")
+}
+
 val javadocJar by tasks.registering(Jar::class) {
     dependsOn(dokkaJavadoc)
     archiveClassifier.set("javadoc")
     from(tasks.javadoc)
 }
 
+val deployPlugin by tasks.registering(Copy::class) {
+    dependsOn(shadowJar)
+    System.getenv("PLUGIN_DEPLOY_PATH")?.let {
+        from(shadowJar)
+        into(it)
+    }
+}
+
 val build = (tasks["build"] as Task).apply {
     arrayOf(
+            deployPlugin,
+            shadowJar,
             sourcesJar
     ).forEach { dependsOn(it) }
 }
+
+
 publishing {
     publications {
         create<MavenPublication>("maven") {
             from(components["java"])
             artifact(sourcesJar.get())
+            artifact(shadowJar)
             artifact(javadocJar.get())
             artifact(dokkaJar.get())
 
