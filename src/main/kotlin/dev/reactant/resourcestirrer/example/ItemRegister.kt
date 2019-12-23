@@ -2,14 +2,13 @@ package dev.reactant.resourcestirrer.example
 
 import dev.reactant.reactant.core.component.Component
 import dev.reactant.reactant.core.component.lifecycle.LifeCycleHook
-import dev.reactant.resourcestirrer.ResourceStirrer
-import dev.reactant.resourcestirrer.collector.ItemResourceManagingService
+import dev.reactant.resourcestirrer.collector.ItemResourcesTableService
 
 @Component
 private class ItemRegister(
-        private val itemResource: ItemResourceManagingService
+        private val itemResourcesTableService: ItemResourcesTableService
 ) : LifeCycleHook {
     override fun onEnable() {
-        itemResource.addItem(ExtraItems.LIQUID);
+        itemResourcesTableService.addTable(ExtraItems)
     }
 }

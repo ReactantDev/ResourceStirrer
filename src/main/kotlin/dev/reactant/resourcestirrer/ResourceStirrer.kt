@@ -9,6 +9,9 @@ import org.bukkit.plugin.java.JavaPlugin
 class ResourceStirrer : JavaPlugin() {
     companion object {
         const val configFolder = "plugins/ResourceStirrer/";
+        const val temporaryDirectoryPath = "$configFolder/.cache"
+        const val resourcePackOutputPath = "$temporaryDirectoryPath/resources.zip"
+        const val resourcePackHashOutputPath = "$temporaryDirectoryPath/resources.zip.sha1"
         val logger = LogManager.getLogger("ResourceStirrer")!!;
     }
 }

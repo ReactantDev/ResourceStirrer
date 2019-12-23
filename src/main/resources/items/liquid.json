@@ -1,6 +1,6 @@
 {
   "parent": "item/generated",
   "textures": {
-    "layer0": "stirred:${dir}/liquid"
+    "layer0": "stirred:${dir}/texture"
   }
 }

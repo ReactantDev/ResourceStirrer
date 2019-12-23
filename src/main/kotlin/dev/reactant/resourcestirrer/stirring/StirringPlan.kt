@@ -1,10 +1,9 @@
 package dev.reactant.resourcestirrer.stirring
 
 import dev.reactant.reactant.service.spec.config.Config
-import dev.reactant.resourcestirrer.ItemResource
-import dev.reactant.resourcestirrer.ResourceStirrer
 import dev.reactant.resourcestirrer.config.ResourceStirrerConfig
 import dev.reactant.resourcestirrer.config.StirrerMetaLock
+import dev.reactant.resourcestirrer.itemresource.ItemResource
 import org.bukkit.Material
 import java.io.File
 

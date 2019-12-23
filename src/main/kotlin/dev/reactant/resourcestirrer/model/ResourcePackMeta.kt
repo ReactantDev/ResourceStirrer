@@ -1,4 +1,4 @@
-package dev.reactant.resourcestirrer.config
+package dev.reactant.resourcestirrer.model
 
 /**
  * Model class of resource pack meta file

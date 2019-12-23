@@ -1,6 +1,6 @@
 name: ResourceStirrer
 main: dev.reactant.resourcestirrer.ResourceStirrer
-version: 0.1.3
+version: 0.1.6
 api-version: 1.14
 depend:
   - Reactant

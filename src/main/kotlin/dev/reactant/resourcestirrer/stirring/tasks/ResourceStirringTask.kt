@@ -4,13 +4,18 @@ import dev.reactant.resourcestirrer.ResourceStirrer
 import dev.reactant.resourcestirrer.stirring.StirringPlan
 import io.reactivex.Completable
 import java.io.File
-import java.io.InputStream
 
 interface ResourceStirringTask {
     fun start(stirringPlan: StirringPlan): Completable;
-    val cacheFolder get() = File("${ResourceStirrer.configFolder}/.cache/packing")
+
+    val resourcePackOutputPath get() = ResourceStirrer.resourcePackOutputPath
+    val temporaryDirectory get() = File(ResourceStirrer.temporaryDirectoryPath)
+    val workingDirectory get() = File("${ResourceStirrer.temporaryDirectoryPath}/packing")
+
+    val name: String
+    val dependsOn: List<ResourceStirringTask>
 
     companion object {
-        const val ASSETS_NAME_SPACE = "stirred";
+        const val ASSETS_NAME_SPACE = "stirred"
     }
 }

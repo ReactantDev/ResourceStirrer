@@ -5,6 +5,8 @@ import dev.reactant.reactant.core.component.Component
 import dev.reactant.reactant.core.component.lifecycle.LifeCycleControlAction
 import dev.reactant.reactant.core.component.lifecycle.LifeCycleHook
 import dev.reactant.reactant.core.component.lifecycle.LifeCycleInspector
+import dev.reactant.reactant.core.dependency.injection.Inject
+import dev.reactant.reactant.service.spec.config.Config
 import dev.reactant.reactant.service.spec.config.ConfigService
 import dev.reactant.reactant.service.spec.config.loadOrDefault
 import dev.reactant.reactant.service.spec.parser.JsonParserService
@@ -12,10 +14,7 @@ import dev.reactant.resourcestirrer.ResourceStirrer
 import dev.reactant.resourcestirrer.collector.ItemResourceManagingService
 import dev.reactant.resourcestirrer.config.ResourceStirrerConfig
 import dev.reactant.resourcestirrer.config.StirrerMetaLock
-import dev.reactant.resourcestirrer.stirring.tasks.BaseResourceCopyingTask
-import dev.reactant.resourcestirrer.stirring.tasks.ItemResourceWritingTask
-import dev.reactant.resourcestirrer.stirring.tasks.ResourcePackDefaultMetaGeneratingTask
-import dev.reactant.resourcestirrer.stirring.tasks.ResourcePackingTask
+import dev.reactant.resourcestirrer.stirring.tasks.ResourceStirringTask
 import io.reactivex.Completable
 import io.reactivex.Single
 import io.reactivex.subjects.PublishSubject
@@ -27,30 +26,46 @@ class ResourceStirringService private constructor(
         private val itemResourceService: ItemResourceManagingService,
         private val configService: ConfigService,
         private val jsonParserService: JsonParserService,
-        private val baseResourceCopyingTask: BaseResourceCopyingTask,
-        private val itemResourceWritingTask: ItemResourceWritingTask,
-        private val defaultMetaGeneratingTask: ResourcePackDefaultMetaGeneratingTask,
-        private val packingTask: ResourcePackingTask
+        @Inject("${ResourceStirrer.configFolder}/config.json")
+        private val resourceStirrerConfig: Config<ResourceStirrerConfig>
 ) : LifeCycleHook, LifeCycleInspector {
+
+
     private val parser = JsonParser();
+
     override fun afterBulkActionComplete(action: LifeCycleControlAction) {
         if (action != LifeCycleControlAction.Initialize) return
-        startStirring().blockingAwait()
+        if (resourceStirrerConfig.content.updateOnAllServicesEnabled) {
+            val startAt = System.currentTimeMillis()
+            startStirring().blockingAwait()
+            ResourceStirrer.logger.info("Update resource pack cost ${System.currentTimeMillis() - startAt} ms")
+        }
     }
 
     val latestStirringPlan get() = _latestStirringPlan;
     private var _latestStirringPlan: StirringPlan? = null;
 
     private val _stirringCompleteHook = PublishSubject.create<StirringPlan>()
-    val stirringCompleteHook = _stirringCompleteHook.hide()
 
-    private val stirringTasks = arrayListOf(
-            baseResourceCopyingTask,
-            itemResourceWritingTask,
-            defaultMetaGeneratingTask,
-            packingTask
-    );
+    private val stirringTasks: ArrayList<ResourceStirringTask> = arrayListOf()
 
+    fun registerStirringTask(stirringTask: ResourceStirringTask) {
+        stirringTask.dependsOn.map { dependsOn -> dependsOn to stirringTasks.indexOf(dependsOn) }
+                .let { dependenciesIndexes: List<Pair<ResourceStirringTask, Int>> ->
+                    dependenciesIndexes.filter { it.second == -1 }.let { notFulFilledDependencies ->
+                        if (notFulFilledDependencies.isNotEmpty()) {
+                            throw IllegalStateException(
+                                    "Stirring task ${stirringTask.name} should be register after " +
+                                            "[${notFulFilledDependencies.map { it.first.name }.joinToString(",")}] registered")
+                        }
+                    }
+                    stirringTasks.add(stirringTask)
+                }
+    }
+
+    /**
+     * Completable to stir the resources and update the resource pack
+     */
     fun startStirring(): Completable {
         return Completable.fromAction { ResourceStirrer.logger.info("Start resource stirring") }
                 .toSingle(::StirringPlan) // Create new stirring plan
@@ -99,7 +114,7 @@ class ResourceStirringService private constructor(
             val resourcePackItemFolder = File("${baseResourcePack.absolutePath}/assets/minecraft/models/item");
 
             if (!resourcePackItemFolder.exists()) setOf()
-            else (resourcePackItemFolder.listFiles()?: arrayOf()).map { file ->
+            else (resourcePackItemFolder.listFiles() ?: arrayOf()).map { file ->
                 FileReader(file).use { reader ->
                     val resourcePackItemModel = parser.parse(reader).asJsonObject;
                     resourcePackItemModel.getAsJsonArray("overrides")
@@ -112,7 +127,7 @@ class ResourceStirringService private constructor(
         }
     }
 
-    private val baseResourcePack: File get() = File("${ResourceStirrer.configFolder}/base/")
+    private val baseResourcePack: File get() = File("${ResourceStirrer.configFolder}/base/").also { if (!it.exists()) it.mkdir() }
 
 
     private val lockPath get() = "${ResourceStirrer.configFolder}/stirrer-meta-lock.json"

@@ -1,6 +1,6 @@
-package dev.reactant.resourcestirrer
+package dev.reactant.resourcestirrer.itemresource
 
-import dev.reactant.reactant.utils.content.item.createItemStack
+import dev.reactant.reactant.utils.content.item.itemStackOf
 import org.bukkit.Material
 
 interface ItemResource {
@@ -35,7 +35,7 @@ interface ItemResource {
      */
     @JvmDefault
     val similarItemStack
-        get() = createItemStack(rootBaseItem) {
+        get() = itemStackOf(rootBaseItem) {
             itemMeta {
                 setCustomModelData(allocatedCustomModelData
                         ?: throw IllegalStateException("The custom model data of $identifier is not allocated yet"))

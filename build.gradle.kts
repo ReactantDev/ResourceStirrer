@@ -1,11 +1,11 @@
 import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
+import org.jetbrains.dokka.gradle.DokkaTask
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 import java.net.URI
-import org.jetbrains.dokka.gradle.DokkaTask
 
 val isSnapshot = true
 group = "dev.reactant"
-version = "0.1.4${if (isSnapshot) "-SNAPSHOT" else ""}"
+version = "0.1.6${if (isSnapshot) "-SNAPSHOT" else ""}"
 
 val kotlinVersion = "1.3.31"
 
@@ -33,13 +33,12 @@ repositories {
     mavenCentral()
     jcenter()
     maven { url = URI.create("https://hub.spigotmc.org/nexus/content/repositories/snapshots") }
-    maven { url = URI.create("https://dl.bintray.com/reactant/reactant") }
     maven { url = URI.create("https://oss.sonatype.org/content/repositories/snapshots/") }
 }
 
 dependencies {
     compileOnly(kotlin("stdlib-jdk8", kotlinVersion))
-    compileOnly("dev.reactant:reactant:0.1.4")
+    compileOnly("dev.reactant:reactant:0.1.6-SNAPSHOT")
     compileOnly("org.spigotmc:spigot-api:1.14.2-R0.1-SNAPSHOT")
 
     implementation("net.lingala.zip4j:zip4j:2.1.3")

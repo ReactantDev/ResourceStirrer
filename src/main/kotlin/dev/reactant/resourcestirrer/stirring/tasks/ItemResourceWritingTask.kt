@@ -5,8 +5,10 @@ import com.google.gson.JsonArray
 import com.google.gson.JsonObject
 import com.google.gson.JsonParser
 import dev.reactant.reactant.core.component.Component
+import dev.reactant.reactant.core.component.lifecycle.LifeCycleHook
 import dev.reactant.resourcestirrer.ResourceStirrer
 import dev.reactant.resourcestirrer.collector.ItemResourceManagingService
+import dev.reactant.resourcestirrer.stirring.ResourceStirringService
 import dev.reactant.resourcestirrer.stirring.StirringPlan
 import io.reactivex.Completable
 import java.io.File
@@ -16,11 +18,20 @@ import java.io.InputStream
 
 
 @Component
-internal class ItemResourceWritingTask(
-        private val itemResourceService: ItemResourceManagingService
-) : ResourceStirringTask {
+class ItemResourceWritingTask(
+        private val itemResourceService: ItemResourceManagingService,
+        private val stirringService: ResourceStirringService,
+        baseResourceCopyingTask: BaseResourceCopyingTask
+) : ResourceStirringTask, LifeCycleHook {
+    override val name: String = javaClass.canonicalName
+    override val dependsOn: List<ResourceStirringTask> = listOf(baseResourceCopyingTask)
+
     private val gson = GsonBuilder().create();
     private val parser = JsonParser();
+
+    override fun onEnable() {
+        stirringService.registerStirringTask(this)
+    }
 
     override fun start(stirringPlan: StirringPlan): Completable = Completable.fromCallable {
         stirringPlan.stirrerMetaLock.content.itemResourceCustomMetaLock
@@ -32,7 +43,7 @@ internal class ItemResourceWritingTask(
                 .sortedBy { it.value }
                 .forEach { (itemResourceIdentifier, _) ->
                     val itemResource = itemResourceService.getItem(itemResourceIdentifier)!!
-                    val assetsPath = "${cacheFolder.absolutePath}/assets/${ResourceStirringTask.ASSETS_NAME_SPACE}";
+                    val assetsPath = "${workingDirectory.absolutePath}/assets/${ResourceStirringTask.ASSETS_NAME_SPACE}";
                     val textureFolderPath = "$assetsPath/textures/$itemResourceIdentifier"
                     val modelFilePath = "$assetsPath/models/$itemResourceIdentifier.json"
 
@@ -54,13 +65,14 @@ internal class ItemResourceWritingTask(
 
     fun rewriteMainModelFile(stirringPlan: StirringPlan): Completable = Completable.fromCallable {
         stirringPlan.stirrerMetaLock.content.itemResourceCustomMetaLock.entries
+                .filter { itemResourceService.getItem(it.key) != null }
                 .sortedBy { it.value }
                 .map { itemResourceService.getItem(it.key)!! to it.value }
                 .forEach { (itemResource, customData) ->
                     val material = customData.split('-')[0];
                     val customMeta = customData.split('-')[1].toInt();
 
-                    val materialModelPath = "${cacheFolder.absolutePath}/assets/minecraft/models/item/$material.json";
+                    val materialModelPath = "${workingDirectory.absolutePath}/assets/minecraft/models/item/$material.json";
                     val materialModelFile = File(materialModelPath)
 
                     // if there have no model file of that material yet
