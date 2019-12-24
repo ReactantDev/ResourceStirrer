@@ -5,6 +5,7 @@ import dev.reactant.reactant.core.component.Component
 import dev.reactant.reactant.core.component.lifecycle.LifeCycleHook
 import dev.reactant.reactant.core.component.lifecycle.LifeCycleInspector
 import dev.reactant.reactant.core.dependency.injection.Inject
+import dev.reactant.reactant.core.dependency.injection.components.Components
 import dev.reactant.reactant.service.spec.config.Config
 import dev.reactant.reactant.service.spec.config.ConfigService
 import dev.reactant.reactant.service.spec.config.loadOrDefault
@@ -25,7 +26,8 @@ class ResourceStirringService private constructor(
         private val configService: ConfigService,
         private val jsonParserService: JsonParserService,
         @Inject("${ResourceStirrer.configFolder}/config.json")
-        private val resourceStirrerConfig: Config<ResourceStirrerConfig>
+        private val resourceStirrerConfig: Config<ResourceStirrerConfig>,
+        private val unsortedTasks: Components<ResourceStirringTask>
 ) : LifeCycleHook, LifeCycleInspector {
 
 
@@ -45,21 +47,6 @@ class ResourceStirringService private constructor(
     val latestStirringPlan get() = _latestStirringPlan;
     private var _latestStirringPlan: StirringPlan? = null;
 
-    private val stirringTasks: ArrayList<ResourceStirringTask> = arrayListOf()
-
-    fun registerStirringTask(stirringTask: ResourceStirringTask) {
-        stirringTask.dependsOn.map { dependsOn -> dependsOn to stirringTasks.indexOf(dependsOn) }
-                .let { dependenciesIndexes: List<Pair<ResourceStirringTask, Int>> ->
-                    dependenciesIndexes.filter { it.second == -1 }.let { notFulFilledDependencies ->
-                        if (notFulFilledDependencies.isNotEmpty()) {
-                            throw IllegalStateException(
-                                    "Stirring task ${stirringTask.name} should be register after " +
-                                            "[${notFulFilledDependencies.map { it.first.name }.joinToString(",")}] registered")
-                        }
-                    }
-                    stirringTasks.add(stirringTask)
-                }
-    }
 
     /**
      * Completable to stir the resources and update the resource pack
@@ -84,13 +71,24 @@ class ResourceStirringService private constructor(
                 }
                 .doOnSuccess { _latestStirringPlan = it }
                 .let {
-                    if (!skipOutput) it.flatMap { stirringPlan ->
-                        ResourceStirrer.logger.info("Start resource stirring...")
+                    return@let (if (!skipOutput) it.flatMap { stirringPlan ->
+                        val stirringTaskDepth = hashMapOf<ResourceStirringTask, Int>()
+                        fun getStirringTaskDepth(task: ResourceStirringTask): Int {
+                            stirringTaskDepth[task] = stirringTaskDepth[task]
+                                    ?: (task.dependsOn.map { getStirringTaskDepth(it) }.max() ?: -1) + 1
+                            return stirringTaskDepth[task]!!
+                        }
+
+                        val stirringTasks = unsortedTasks.forEach { task -> getStirringTaskDepth(task).let { ResourceStirrer.logger.warn(task.name + "->" + it) } }
+                        ResourceStirrer.logger.info("Start stirring tasks: ${stirringTaskDepth.entries.sortedBy { it.value }.map { it.key }.map { it::class.simpleName }.joinToString(",")}")
                         Single.fromCallable {
                             // stirring tasks
-                            stirringTasks.map { task -> task.start(stirringPlan).blockingAwait() }
+                            stirringTaskDepth.entries.sortedBy { it.value }.map { it.key }.map { task ->
+                                ResourceStirrer.logger.info("Stirring task: ${task.name}")
+                                task.start(stirringPlan).blockingAwait()
+                            }
                         }
-                    } else it
+                    } else it)
                 }
                 .ignoreElement();
     }

@@ -5,7 +5,6 @@ import dev.reactant.reactant.core.component.lifecycle.LifeCycleHook
 import dev.reactant.reactant.service.spec.config.ConfigService
 import dev.reactant.reactant.service.spec.parser.JsonParserService
 import dev.reactant.resourcestirrer.model.ResourcePackMeta
-import dev.reactant.resourcestirrer.stirring.ResourceStirringService
 import dev.reactant.resourcestirrer.stirring.StirringPlan
 import io.reactivex.Completable
 import java.io.File
@@ -14,14 +13,12 @@ import java.io.File
 class ResourcePackDefaultMetaGeneratingTask(
         private val configService: ConfigService,
         private val jsonParserService: JsonParserService,
-        private val stirringService: ResourceStirringService,
         itemResourceWritingTask: ItemResourceWritingTask
 ) : ResourceStirringTask, LifeCycleHook {
     override val name: String = javaClass.canonicalName
     override val dependsOn: List<ResourceStirringTask> = listOf(itemResourceWritingTask)
 
     override fun onEnable() {
-        stirringService.registerStirringTask(this)
     }
 
     override fun start(stirringPlan: StirringPlan): Completable = Completable.fromCallable {

@@ -52,7 +52,6 @@ class StirredItemGalleryUI(
 
             div {
                 size(fillParent, actual(5))
-                fill(itemStackOf(Material.WHITE_STAINED_GLASS_PANE))
                 padding(2, 4)
                 item {
                     id = "item"

@@ -4,7 +4,6 @@ import dev.reactant.reactant.core.component.Component
 import dev.reactant.reactant.core.component.lifecycle.LifeCycleHook
 import dev.reactant.reactant.extra.file.ReactantTextFileWriterService
 import dev.reactant.resourcestirrer.ResourceStirrer
-import dev.reactant.resourcestirrer.stirring.ResourceStirringService
 import dev.reactant.resourcestirrer.stirring.StirringPlan
 import io.reactivex.Completable
 import net.lingala.zip4j.ZipFile
@@ -16,7 +15,6 @@ import java.io.FileInputStream
 
 @Component
 open class ResourcePackingTask(
-        private val stirringService: ResourceStirringService,
         defaultMetaGeneratingTask: ResourcePackDefaultMetaGeneratingTask,
         private val fileWriterService: ReactantTextFileWriterService
 ) : ResourceStirringTask, LifeCycleHook {
@@ -24,7 +22,6 @@ open class ResourcePackingTask(
     override val name: String = javaClass.canonicalName
     override val dependsOn: List<ResourceStirringTask> = listOf(defaultMetaGeneratingTask)
     override fun onEnable() {
-        stirringService.registerStirringTask(this)
     }
 
     override fun start(stirringPlan: StirringPlan): Completable = Completable.fromAction {

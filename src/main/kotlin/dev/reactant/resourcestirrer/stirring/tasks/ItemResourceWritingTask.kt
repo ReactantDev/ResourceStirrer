@@ -8,7 +8,6 @@ import dev.reactant.reactant.core.component.Component
 import dev.reactant.reactant.core.component.lifecycle.LifeCycleHook
 import dev.reactant.resourcestirrer.ResourceStirrer
 import dev.reactant.resourcestirrer.collector.ItemResourceManagingService
-import dev.reactant.resourcestirrer.stirring.ResourceStirringService
 import dev.reactant.resourcestirrer.stirring.StirringPlan
 import io.reactivex.Completable
 import java.io.File
@@ -20,7 +19,6 @@ import java.io.InputStream
 @Component
 class ItemResourceWritingTask(
         private val itemResourceService: ItemResourceManagingService,
-        private val stirringService: ResourceStirringService,
         baseResourceCopyingTask: BaseResourceCopyingTask
 ) : ResourceStirringTask, LifeCycleHook {
     override val name: String = javaClass.canonicalName
@@ -30,7 +28,6 @@ class ItemResourceWritingTask(
     private val parser = JsonParser();
 
     override fun onEnable() {
-        stirringService.registerStirringTask(this)
     }
 
     override fun start(stirringPlan: StirringPlan): Completable = Completable.fromCallable {

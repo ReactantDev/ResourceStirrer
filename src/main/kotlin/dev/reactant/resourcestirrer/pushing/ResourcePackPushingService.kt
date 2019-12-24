@@ -9,7 +9,6 @@ import dev.reactant.reactant.service.spec.server.EventService
 import dev.reactant.reactant.service.spec.server.SchedulerService
 import dev.reactant.resourcestirrer.ResourceStirrer
 import dev.reactant.resourcestirrer.config.ResourceStirrerConfig
-import dev.reactant.resourcestirrer.stirring.ResourceStirringService
 import dev.reactant.resourcestirrer.stirring.StirringPlan
 import dev.reactant.resourcestirrer.stirring.tasks.ResourcePackingTask
 import dev.reactant.resourcestirrer.stirring.tasks.ResourceStirringTask
@@ -25,7 +24,6 @@ class ResourcePackPushingService(
         private val event: EventService,
         @Inject("${ResourceStirrer.configFolder}/config.json")
         private val resourceStirrerConfig: Config<ResourceStirrerConfig>,
-        private val stirringService: ResourceStirringService,
         private val schedulerService: SchedulerService,
         packingTask: ResourcePackingTask
 ) : ResourceStirringTask, LifeCycleHook {
@@ -36,7 +34,6 @@ class ResourcePackPushingService(
     }
 
     override fun onEnable() {
-        stirringService.registerStirringTask(this)
         if (config.pushWhenPlayerJoin) {
             register(event) {
                 PlayerJoinEvent::class.observable().subscribe {
