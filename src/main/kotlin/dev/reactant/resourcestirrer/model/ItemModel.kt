@@ -1,4 +1,4 @@
-package dev.reactant.ui.model
+package dev.reactant.resourcestirrer.model
 
 import com.google.gson.Gson
 

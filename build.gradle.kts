@@ -7,15 +7,14 @@ val isSnapshot = true
 group = "dev.reactant"
 version = "0.1.6${if (isSnapshot) "-SNAPSHOT" else ""}"
 
-val kotlinVersion = "1.3.31"
+val kotlinVersion = "1.3.61"
 
 plugins {
     java
     `maven-publish`
     signing
-    kotlin("jvm") version "1.3.31"
+    kotlin("jvm") version "1.3.61"
     id("com.github.johnrengelman.shadow") version "5.0.0"
-    id("com.jfrog.bintray") version "1.8.4"
     id("org.jetbrains.dokka") version "0.10.0"
 }
 
@@ -77,6 +76,7 @@ val sourcesJar by tasks.registering(Jar::class) {
 
 val shadowJar = (tasks["shadowJar"] as ShadowJar).apply {
     relocate("net.lingala.zip4j", "dev.reactant.resourcestirrer.zip4j")
+    relocate("org.apache.commons.codec", "dev.reactant.resourcestirrer.codec")
 }
 
 val javadocJar by tasks.registering(Jar::class) {
