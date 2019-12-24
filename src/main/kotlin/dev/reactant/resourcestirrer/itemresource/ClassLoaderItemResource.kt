@@ -1,9 +1,9 @@
 package dev.reactant.resourcestirrer.itemresource
 
-import dev.reactant.resourcestirrer.annotation.ItemResourcesTable
 import dev.reactant.resourcestirrer.model.ItemModel
 import dev.reactant.resourcestirrer.resourceloader.ClassLoaderResourceLoader
 import dev.reactant.resourcestirrer.stirring.tasks.ItemResourceWritingTask
+import dev.reactant.resourcestirrer.table.ItemResourcesTable
 import dev.reactant.resourcestirrer.utils.outputTo
 import org.bukkit.Material
 import java.io.File

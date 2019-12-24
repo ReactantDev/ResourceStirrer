@@ -2,7 +2,7 @@ package dev.reactant.resourcestirrer.config
 
 class ResourceStirrerConfig {
     var customMetaRange = ResourceStirrerCustomMetaRange()
-    var updateOnAllServicesEnabled = false
+    var updateOnStart = false
 
     var development = DevelopmentConfig()
 

@@ -1,4 +1,4 @@
-package dev.reactant.resourcestirrer.annotation
+package dev.reactant.resourcestirrer.table
 
 import dev.reactant.resourcestirrer.itemresource.ItemResource
 import dev.reactant.resourcestirrer.resourceloader.ClassLoaderResourceLoader

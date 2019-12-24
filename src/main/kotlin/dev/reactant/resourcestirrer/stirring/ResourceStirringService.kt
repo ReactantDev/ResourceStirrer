@@ -2,7 +2,6 @@ package dev.reactant.resourcestirrer.stirring
 
 import com.google.gson.JsonParser
 import dev.reactant.reactant.core.component.Component
-import dev.reactant.reactant.core.component.lifecycle.LifeCycleControlAction
 import dev.reactant.reactant.core.component.lifecycle.LifeCycleHook
 import dev.reactant.reactant.core.component.lifecycle.LifeCycleInspector
 import dev.reactant.reactant.core.dependency.injection.Inject
@@ -17,7 +16,6 @@ import dev.reactant.resourcestirrer.config.StirrerMetaLock
 import dev.reactant.resourcestirrer.stirring.tasks.ResourceStirringTask
 import io.reactivex.Completable
 import io.reactivex.Single
-import io.reactivex.subjects.PublishSubject
 import java.io.File
 import java.io.FileReader
 
@@ -33,19 +31,19 @@ class ResourceStirringService private constructor(
 
     private val parser = JsonParser();
 
-    override fun afterBulkActionComplete(action: LifeCycleControlAction) {
-        if (action != LifeCycleControlAction.Initialize) return
-        if (resourceStirrerConfig.content.updateOnAllServicesEnabled) {
-            val startAt = System.currentTimeMillis()
+    override fun onEnable() {
+        val startAt = System.currentTimeMillis()
+        if (resourceStirrerConfig.content.updateOnStart) {
             startStirring().blockingAwait()
             ResourceStirrer.logger.info("Update resource pack cost ${System.currentTimeMillis() - startAt} ms")
+        } else {
+            startStirring(true).blockingAwait()
+            ResourceStirrer.logger.info("Update resource mapping cost ${System.currentTimeMillis() - startAt} ms")
         }
     }
 
     val latestStirringPlan get() = _latestStirringPlan;
     private var _latestStirringPlan: StirringPlan? = null;
-
-    private val _stirringCompleteHook = PublishSubject.create<StirringPlan>()
 
     private val stirringTasks: ArrayList<ResourceStirringTask> = arrayListOf()
 
@@ -66,8 +64,8 @@ class ResourceStirringService private constructor(
     /**
      * Completable to stir the resources and update the resource pack
      */
-    fun startStirring(): Completable {
-        return Completable.fromAction { ResourceStirrer.logger.info("Start resource stirring") }
+    fun startStirring(skipOutput: Boolean = false): Completable {
+        return Completable.fromAction { ResourceStirrer.logger.info("Start resource mapping") }
                 .toSingle(::StirringPlan) // Create new stirring plan
                 .flatMap(::prepareStirringPlan) // Fill in configuration
                 .doOnSuccess { stirringPlan ->
@@ -85,13 +83,15 @@ class ResourceStirringService private constructor(
 
                 }
                 .doOnSuccess { _latestStirringPlan = it }
-                .flatMap { stirringPlan ->
-                    Single.fromCallable {
-                        // stirring tasks
-                        stirringTasks.map { task -> task.start(stirringPlan).blockingAwait() }
-                    }
+                .let {
+                    if (!skipOutput) it.flatMap { stirringPlan ->
+                        ResourceStirrer.logger.info("Start resource stirring...")
+                        Single.fromCallable {
+                            // stirring tasks
+                            stirringTasks.map { task -> task.start(stirringPlan).blockingAwait() }
+                        }
+                    } else it
                 }
-                .doFinally { _stirringCompleteHook.onNext(_latestStirringPlan!!) }
                 .ignoreElement();
     }
 
