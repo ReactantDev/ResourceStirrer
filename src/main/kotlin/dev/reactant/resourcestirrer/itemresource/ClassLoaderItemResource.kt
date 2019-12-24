@@ -19,11 +19,11 @@ open class ClassLoaderItemResource(
         override val predicate: Map<String, Any>
 ) : ItemResource {
 
-    private val itemModel = defaultItemModel.copy(
-            textures = ItemModel.Textures(
-                    layer0 = "stirred:\${dir}/texture"
-            )
-    )
+    private val itemModel = defaultItemModel.copy().apply {
+        texture {
+            layer0 = "stirred:\${dir}/texture"
+        }
+    }
 
     override var allocatedCustomModelData: Int? = null
 
