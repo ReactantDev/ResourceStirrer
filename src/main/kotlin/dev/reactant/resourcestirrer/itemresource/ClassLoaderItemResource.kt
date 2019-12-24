@@ -20,7 +20,7 @@ open class ClassLoaderItemResource(
 ) : ItemResource {
 
     private val itemModel = defaultItemModel.copy().apply {
-        texture {
+        textures {
             layer0 = "stirred:\${dir}/texture"
         }
     }

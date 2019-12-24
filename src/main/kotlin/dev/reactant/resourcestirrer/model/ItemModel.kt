@@ -8,7 +8,7 @@ data class ItemModel(
         var display: Display? = null,
         var elements: Array<Element>? = null
 ) {
-    fun texture(content: Textures.() -> Unit) {
+    fun textures(content: Textures.() -> Unit) {
         this.textures = Textures().apply(content)
     }
 
