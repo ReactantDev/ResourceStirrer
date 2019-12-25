@@ -6,9 +6,6 @@ import kotlin.reflect.KTypeProjection
 import kotlin.reflect.KVariance
 import kotlin.reflect.full.createType
 import kotlin.reflect.full.declaredMemberProperties
-import kotlin.reflect.full.isSubclassOf
-import kotlin.reflect.full.isSubtypeOf
-import kotlin.reflect.jvm.jvmErasure
 
 abstract class ItemResourcesTable(
         val identifierPrefix: String,
@@ -33,25 +30,27 @@ abstract class ItemResourcesTable(
         val itemResourceType = ItemResource::class.createType()
         val multipleItemResourceType = Iterable::class.createType(listOf(KTypeProjection(KVariance.OUT, itemResourceType)))
 
-        val multipleItemResource = this::class.declaredMemberProperties
-                .filter { it.returnType.isSubtypeOf(multipleItemResourceType) }
-                .map { it.getter.call(this) as Iterable<ItemResource> }
-                .flatten()
+        val objectInstances = this::class.nestedClasses
+                .mapNotNull { it.objectInstance }
 
-        val singleItemResource = this::class.declaredMemberProperties
-                .filter { it.returnType.isSubtypeOf(itemResourceType) }
-                .map { it.getter.call(this) as ItemResource }
+        val properties = this::class.declaredMemberProperties
+                .mapNotNull { it.getter.call(this) }
 
+        return walk(objectInstances.union(properties).iterator()).iterator()
+    }
 
-        val objectMultipleItemResource = this::class.nestedClasses
-                .filter { it.isSubclassOf(multipleItemResourceType.jvmErasure) }
-                .map { it.objectInstance as Iterable<ItemResource> }
-                .flatten()
-
-        val objectSingleItemResource = this::class.nestedClasses
-                .filter { it.isSubclassOf(itemResourceType.jvmErasure) }
-                .map { it.objectInstance as ItemResource }
-
-        return multipleItemResource.union(singleItemResource).union(objectMultipleItemResource).union(objectSingleItemResource).iterator()
+    private fun walk(iterator: Iterator<*>): Set<ItemResource> {
+        val result = HashSet<ItemResource>()
+        iterator.forEach { value ->
+            when (value) {
+                is ItemResource -> setOf(value)
+                is Iterable<*> -> walk(value.iterator())
+                is Map<*, *> -> walk(value.entries.iterator())
+                is Array<*> -> walk(value.iterator())
+                else -> throw UnsupportedOperationException(
+                        "${value?.javaClass?.canonicalName} is not a supported type in ItemResourceTable")
+            }.let { result.addAll(it) }
+        }
+        return result
     }
 }

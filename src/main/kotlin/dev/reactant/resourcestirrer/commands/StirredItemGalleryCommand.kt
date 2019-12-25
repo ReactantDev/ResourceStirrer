@@ -32,7 +32,7 @@ internal class StirredItemGalleryCommand(
 
     @CommandLine.Parameters(arity = "0..*", paramLabel = "IDENTIFIER",
             description = ["Filtering item resource identifier, wildcard is available"])
-    var identifierWildcards: ArrayList<String> = arrayListOf();
+    var identifierWildcards: ArrayList<String> = arrayListOf()
 
 
     override fun run() {
@@ -47,6 +47,7 @@ internal class StirredItemGalleryCommand(
                         PatternMatchingUtils.matchWildcard(wildcard, it.identifier)
                     }
                 }
+                .sortedBy { it.identifier }
 
         if (textOnlyList) {
             val listTable = MultiColumns.create {
@@ -69,7 +70,6 @@ internal class StirredItemGalleryCommand(
                     stirredItemGalleryUI.showGallery(sender as Player, it)
                 }
             }
-
         } else {
             stderr.out("Only player can use this command without --text-list");
         }
