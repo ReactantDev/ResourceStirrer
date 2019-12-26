@@ -13,22 +13,19 @@ import java.io.InputStream
 open class ClassLoaderItemResource(
         private val resourceLoader: ClassLoaderResourceLoader,
         private val searchAt: String,
-        private val _identifier: String?,
+        override val identifier: String,
         override val baseItem: Material?,
         override val baseResource: ItemResource?,
         override val predicate: Map<String, Any>
 ) : ItemResource {
 
-    private val itemModel = defaultItemModel.copy().apply {
+    val itemModel = defaultItemModel.copy().apply {
         textures {
             layer0 = "stirred:\${dir}/texture"
         }
     }
 
     override var allocatedCustomModelData: Int? = null
-
-    override val identifier: String
-        get() = _identifier ?: this.javaClass.canonicalName
 
 
     private val modelFileInputStream: InputStream?
@@ -41,7 +38,7 @@ open class ClassLoaderItemResource(
 
     override fun writeTextureFiles(path: String) {
         extraFileFromLoader("$searchAt.png", "$path/texture.png")
-                ?: throw IllegalArgumentException("Texture file not found (identifier: ${_identifier}, missing file: ${searchAt})")
+                ?: throw IllegalArgumentException("Texture file not found (identifier: ${identifier}, missing file: ${searchAt})")
 
         extraFileFromLoader("$searchAt.png.mcmeta", "$path/texture.png.mcmeta")
     }
