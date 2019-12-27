@@ -1,7 +1,7 @@
 package dev.reactant.resourcestirrer.config
 
 class ResourceStirrerConfig {
-    var customMetaRange = ResourceStirrerCustomMetaRange()
+    var customDataRange = ResourceStirrerCustomDataRange()
     var updateOnStart = false
 
     var development = DevelopmentConfig()
@@ -23,7 +23,7 @@ class ResourceStirrerConfig {
         var threads = 8
     }
 
-    class ResourceStirrerCustomMetaRange {
+    class ResourceStirrerCustomDataRange {
         var min = 100
     }
 }

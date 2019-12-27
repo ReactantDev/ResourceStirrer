@@ -8,12 +8,27 @@ data class ItemModel(
         var display: Display? = null,
         var elements: Array<Element>? = null
 ) {
-    fun textures(content: Textures.() -> Unit) {
-        this.textures = Textures().apply(content)
+    fun textures(content: Textures.() -> Unit): Textures {
+        return (textures ?: Textures().also { textures = it }).apply(content)
     }
 
-    fun display(content: Display.() -> Unit) {
-        this.display = Display().apply(content)
+    fun display(content: Display.() -> Unit): Display {
+        return (display ?: Display().also { display = it }).apply(content)
+    }
+
+    class DisplayType internal constructor(
+            val displayPositionGetter: (Display) -> (DisplayPosition.() -> Unit) -> DisplayPosition
+    )
+
+    object DisplayTypes {
+        val thirdperson_righthand = DisplayType { display: Display -> { display.thirdperson_righthand(it) } }
+        val thirdperson_lefthand = DisplayType { display: Display -> { display.thirdperson_lefthand(it) } }
+        val firstperson_righthand = DisplayType { display: Display -> { display.firstperson_righthand(it) } }
+        val firstperson_lefthand = DisplayType { display: Display -> { display.firstperson_lefthand(it) } }
+        val gui = DisplayType { display: Display -> { display.gui(it) } }
+        val head = DisplayType { display: Display -> { display.head(it) } }
+        val ground = DisplayType { display: Display -> { display.ground(it) } }
+        val fixed = DisplayType { display: Display -> { display.fixed(it) } }
     }
 
     data class Display(
@@ -26,36 +41,36 @@ data class ItemModel(
             var ground: DisplayPosition? = null,
             var fixed: DisplayPosition? = null
     ) {
-        fun thirdperson_righthand(content: DisplayPosition.() -> Unit) {
-            this.thirdperson_righthand = DisplayPosition().apply(content)
+        fun thirdperson_righthand(content: DisplayPosition.() -> Unit): DisplayPosition {
+            return (this.thirdperson_righthand ?: DisplayPosition().also { thirdperson_righthand = it }).apply(content)
         }
 
-        fun thirdperson_lefthand(content: DisplayPosition.() -> Unit) {
-            this.thirdperson_lefthand = DisplayPosition().apply(content)
+        fun thirdperson_lefthand(content: DisplayPosition.() -> Unit): DisplayPosition {
+            return (this.thirdperson_lefthand ?: DisplayPosition().also { thirdperson_lefthand = it }).apply(content)
         }
 
-        fun firstperson_righthand(content: DisplayPosition.() -> Unit) {
-            this.firstperson_righthand = DisplayPosition().apply(content)
+        fun firstperson_righthand(content: DisplayPosition.() -> Unit): DisplayPosition {
+            return (this.firstperson_righthand ?: DisplayPosition().also { firstperson_righthand = it }).apply(content)
         }
 
-        fun firstperson_lefthand(content: DisplayPosition.() -> Unit) {
-            this.firstperson_lefthand = DisplayPosition().apply(content)
+        fun firstperson_lefthand(content: DisplayPosition.() -> Unit): DisplayPosition {
+            return (this.firstperson_lefthand ?: DisplayPosition().also { firstperson_lefthand = it }).apply(content)
         }
 
-        fun gui(content: DisplayPosition.() -> Unit) {
-            this.gui = DisplayPosition().apply(content)
+        fun gui(content: DisplayPosition.() -> Unit): DisplayPosition {
+            return (this.gui ?: DisplayPosition().also { thirdperson_righthand = it }).apply(content)
         }
 
-        fun head(content: DisplayPosition.() -> Unit) {
-            this.head = DisplayPosition().apply(content)
+        fun head(content: DisplayPosition.() -> Unit): DisplayPosition {
+            return (this.head ?: DisplayPosition().also { thirdperson_righthand = it }).apply(content)
         }
 
-        fun ground(content: DisplayPosition.() -> Unit) {
-            this.ground = DisplayPosition().apply(content)
+        fun ground(content: DisplayPosition.() -> Unit): DisplayPosition {
+            return (this.ground ?: DisplayPosition().also { thirdperson_righthand = it }).apply(content)
         }
 
-        fun fixed(content: DisplayPosition.() -> Unit) {
-            this.fixed = DisplayPosition().apply(content)
+        fun fixed(content: DisplayPosition.() -> Unit): DisplayPosition {
+            return (this.thirdperson_righthand ?: DisplayPosition().also { thirdperson_righthand = it }).apply(content)
         }
     }
 
@@ -110,6 +125,11 @@ data class ItemModel(
 
     class Textures(
             var layer0: String? = null,
+            var layer1: String? = null,
+            var layer2: String? = null,
+            var layer3: String? = null,
+            var layer4: String? = null,
+            var layer5: String? = null,
             var particle: String? = null
     )
 

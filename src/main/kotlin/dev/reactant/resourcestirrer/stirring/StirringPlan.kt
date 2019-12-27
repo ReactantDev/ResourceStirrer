@@ -2,13 +2,13 @@ package dev.reactant.resourcestirrer.stirring
 
 import dev.reactant.reactant.service.spec.config.Config
 import dev.reactant.resourcestirrer.config.ResourceStirrerConfig
-import dev.reactant.resourcestirrer.config.StirrerMetaLock
+import dev.reactant.resourcestirrer.config.StirrerCustomDataLock
 import dev.reactant.resourcestirrer.itemresource.ItemResource
 import org.bukkit.Material
 import java.io.File
 
 class StirringPlan() {
-    lateinit var stirrerMetaLock: Config<StirrerMetaLock>
+    lateinit var stirrerCustomDataLock: Config<StirrerCustomDataLock>
 
     /**
      * The identifier which indicate a material with custom meta was used in the base material.
@@ -19,27 +19,29 @@ class StirringPlan() {
 
     lateinit var resourcePackSha1: ByteArray;
 
+    lateinit var lostReferenceCustomData: Map<String, String>
+
     /**
      * Allocate a new custom meta if not exist in MetaLock
      */
     public fun addItemResource(itemResource: ItemResource, itemResourceIdentifier: String) {
-        var customMeta = stirrerMetaLock.content.itemResourceCustomMetaLock[itemResourceIdentifier]?.split("-")?.last()?.toInt()
-        if (customMeta==null) {
-            customMeta = searchUsableCustomMeta(itemResource.rootBaseItem);
-            stirrerMetaLock.content.itemResourceCustomMetaLock[itemResourceIdentifier] = "${itemResource.rootBaseItem.name.toLowerCase()}-$customMeta";
+        var customData = stirrerCustomDataLock.content.itemResourceCustomDataLock[itemResourceIdentifier]?.split("-")?.last()?.toInt()
+        if (customData == null) {
+            customData = searchUsableCustomData(itemResource.rootBaseItem);
+            stirrerCustomDataLock.content.itemResourceCustomDataLock[itemResourceIdentifier] = "${itemResource.rootBaseItem.name.toLowerCase()}-$customData";
         }
-        itemResource.allocatedCustomModelData = customMeta;
+        itemResource.allocatedCustomModelData = customData;
     }
 
-    private fun searchUsableCustomMeta(material: Material): Int {
+    private fun searchUsableCustomData(material: Material): Int {
         val materialName = material.name.toLowerCase();
         while (true) {
-            val possibleCustomMeta = stirrerMetaLock.content.lastAllocatedCustomMeta
-                    .getOrPut(materialName) { resourceStirrerConfig.content.customMetaRange.min } + 1;
-            stirrerMetaLock.content.lastAllocatedCustomMeta[materialName] = possibleCustomMeta
-            val possibleIdentifier = "$materialName-$possibleCustomMeta";
+            val possibleCustomData = stirrerCustomDataLock.content.lastAllocatedCustomData
+                    .getOrPut(materialName) { resourceStirrerConfig.content.customDataRange.min } + 1;
+            stirrerCustomDataLock.content.lastAllocatedCustomData[materialName] = possibleCustomData
+            val possibleIdentifier = "$materialName-$possibleCustomData";
             if (!usedIdentifiers.contains(possibleIdentifier)) {
-                return possibleCustomMeta;
+                return possibleCustomData;
             }
         }
     }

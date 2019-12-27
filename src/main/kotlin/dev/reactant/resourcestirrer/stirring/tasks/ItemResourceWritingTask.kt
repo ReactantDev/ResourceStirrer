@@ -31,10 +31,12 @@ class ItemResourceWritingTask(
     }
 
     override fun start(stirringPlan: StirringPlan): Completable = Completable.fromCallable {
-        stirringPlan.stirrerMetaLock.content.itemResourceCustomMetaLock
+        stirringPlan.stirrerCustomDataLock.content.itemResourceCustomDataLock
                 .filter { itemResourceService.getItem(it.key) == null }
-                .forEach { ResourceStirrer.logger.warn("A resource custom data lock lost their reference: ${it.key}") }
-        stirringPlan.stirrerMetaLock.content.itemResourceCustomMetaLock
+                .toMap()
+                .also { stirringPlan.lostReferenceCustomData = it }
+                .also { if (it.isNotEmpty()) ResourceStirrer.logger.warn("Found ${it.size} resource custom data locks lost their reference, it won't cause any problem normally, use \"/resstir fixtool\" to check.") }
+        stirringPlan.stirrerCustomDataLock.content.itemResourceCustomDataLock
                 .filter { itemResourceService.getItem(it.key)?.baseItem != null }
                 .entries
                 .sortedBy { it.value }
@@ -61,13 +63,13 @@ class ItemResourceWritingTask(
     }
 
     fun rewriteMainModelFile(stirringPlan: StirringPlan): Completable = Completable.fromCallable {
-        stirringPlan.stirrerMetaLock.content.itemResourceCustomMetaLock.entries
+        stirringPlan.stirrerCustomDataLock.content.itemResourceCustomDataLock.entries
                 .filter { itemResourceService.getItem(it.key) != null }
                 .sortedBy { it.value }
                 .map { itemResourceService.getItem(it.key)!! to it.value }
                 .forEach { (itemResource, customData) ->
                     val material = customData.split('-')[0];
-                    val customMeta = customData.split('-')[1].toInt();
+                    val customData = customData.split('-')[1].toInt();
 
                     val materialModelPath = "${workingDirectory.absolutePath}/assets/minecraft/models/item/$material.json";
                     val materialModelFile = File(materialModelPath)
@@ -97,7 +99,7 @@ class ItemResourceWritingTask(
                         val overrides = it.getAsJsonArray("overrides");
                         val overrideObj = JsonObject();
                         val predicates = HashMap(itemResource.predicate)
-                        predicates["custom_model_data"] = customMeta;
+                        predicates["custom_model_data"] = customData;
                         overrideObj.add("predicate", gson.toJsonTree(predicates).asJsonObject)
                         overrideObj.addProperty("model", "${ResourceStirringTask.ASSETS_NAME_SPACE}:${itemResource.identifier}")
                         overrides.add(overrideObj);

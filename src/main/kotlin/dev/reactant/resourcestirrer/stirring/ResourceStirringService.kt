@@ -13,7 +13,7 @@ import dev.reactant.reactant.service.spec.parser.JsonParserService
 import dev.reactant.resourcestirrer.ResourceStirrer
 import dev.reactant.resourcestirrer.collector.ItemResourceManagingService
 import dev.reactant.resourcestirrer.config.ResourceStirrerConfig
-import dev.reactant.resourcestirrer.config.StirrerMetaLock
+import dev.reactant.resourcestirrer.config.StirrerCustomDataLock
 import dev.reactant.resourcestirrer.stirring.tasks.ResourceStirringTask
 import io.reactivex.Completable
 import io.reactivex.Single
@@ -57,16 +57,16 @@ class ResourceStirringService private constructor(
                 .flatMap(::prepareStirringPlan) // Fill in configuration
                 .doOnSuccess { stirringPlan ->
                     // Remove previous allocated identifiers if conflict with first priority identifier
-                    stirringPlan.stirrerMetaLock.content.itemResourceCustomMetaLock
+                    stirringPlan.stirrerCustomDataLock.content.itemResourceCustomDataLock
                             .filter { stirringPlan.usedIdentifiers.contains(it.value) }
-                            .forEach { stirringPlan.stirrerMetaLock.content.itemResourceCustomMetaLock.remove(it.key) }
+                            .forEach { stirringPlan.stirrerCustomDataLock.content.itemResourceCustomDataLock.remove(it.key) }
 
                     // Add all registered item resource into plan
                     itemResourceService.identifierResources
                             .forEach { (identifier, resource) -> stirringPlan.addItemResource(resource, identifier) }
 
                     // Save changes on lock
-                    stirringPlan.stirrerMetaLock.save().blockingAwait()
+                    stirringPlan.stirrerCustomDataLock.save().blockingAwait()
 
                 }
                 .doOnSuccess { _latestStirringPlan = it }
@@ -79,8 +79,7 @@ class ResourceStirringService private constructor(
                             return stirringTaskDepth[task]!!
                         }
 
-                        val stirringTasks = unsortedTasks.forEach { task -> getStirringTaskDepth(task).let { ResourceStirrer.logger.warn(task.name + "->" + it) } }
-                        ResourceStirrer.logger.info("Start stirring tasks: ${stirringTaskDepth.entries.sortedBy { it.value }.map { it.key }.map { it::class.simpleName }.joinToString(",")}")
+                        val stirringTasks = unsortedTasks.forEach { task -> getStirringTaskDepth(task) }
                         Single.fromCallable {
                             // stirring tasks
                             stirringTaskDepth.entries.sortedBy { it.value }.map { it.key }.map { task ->
@@ -102,8 +101,8 @@ class ResourceStirringService private constructor(
             .doOnSuccess { stirringPlan.baseResourcePack = baseResourcePack }
             .flatMap { readBaseResourcePackUsedIdentifiers() }
             .doOnSuccess { stirringPlan.usedIdentifiers = it }
-            .flatMap { configService.loadOrDefault(jsonParserService, lockPath, ::StirrerMetaLock) }
-            .doOnSuccess { stirringPlan.stirrerMetaLock = it }
+            .flatMap { configService.loadOrDefault(jsonParserService, lockPath, ::StirrerCustomDataLock) }
+            .doOnSuccess { stirringPlan.stirrerCustomDataLock = it }
             .map { stirringPlan }
 
     private fun readBaseResourcePackUsedIdentifiers(): Single<Set<String>> {

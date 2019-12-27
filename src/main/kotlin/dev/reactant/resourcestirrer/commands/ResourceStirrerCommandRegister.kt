@@ -22,6 +22,7 @@ internal class ResourceStirrerCommandRegister(
             command(::ResourceStirrerCommand) {
                 command({ StirredItemGalleryCommand(itemResourceManagingService, stirredItemGalleryUI) })
                 command({ ResourceStirrerPackUpdateCommand(resourceStirringService) })
+                command({ ResourceStirrerFixToolCommand(resourceStirringService) })
             }
         }
     }

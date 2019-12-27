@@ -15,5 +15,7 @@ internal object ResourceStirrerPermission : PermissionNode("ResourceStirrer") {
         object PACK : PermissionNode(child("pack")) {
             object UPDATE : PermissionNode(child("update"))
         }
+
+        object FIX : PermissionNode(child("fix"))
     }
 }

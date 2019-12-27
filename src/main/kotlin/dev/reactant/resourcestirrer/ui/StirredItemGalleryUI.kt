@@ -29,10 +29,10 @@ class StirredItemGalleryUI(
             fun update() {
                 val itemResource = itemResources[currentIndex]
                 view.getElementById<ReactantUIItemElement>("prev")!!.edit().apply {
-                    displayItem = if (currentIndex - 1 >= 0) itemStackOf(Material.RED_WOOL) { itemMeta { setDisplayName("Previous") } } else null
+                    displayItem = if (currentIndex - 1 >= 0) itemStackOf(Material.RED_WOOL) { itemMeta { setDisplayName("Previous") } } else itemStackOf(Material.AIR)
                 }
                 view.getElementById<ReactantUIItemElement>("next")!!.edit().apply {
-                    displayItem = if (currentIndex + 1 <= itemResources.size - 1) itemStackOf(Material.GREEN_WOOL) { itemMeta { setDisplayName("Next") } } else null
+                    displayItem = if (currentIndex + 1 <= itemResources.size - 1) itemStackOf(Material.GREEN_WOOL) { itemMeta { setDisplayName("Next") } } else itemStackOf(Material.AIR)
                 }
                 view.getElementById<ReactantUIItemElement>("item")!!.edit().apply {
                     displayItem = itemResource.similarItemStack.apply {
@@ -56,8 +56,9 @@ class StirredItemGalleryUI(
                 item {
                     id = "item"
                     click.subscribe {
-                        if (player.hasPermission(ResourceStirrerPermission.ADMIN.ITEM.GET.toString())) {
-                            player.inventory.addItem(displayItem?.clone())
+                        if (player.hasPermission(ResourceStirrerPermission.ADMIN.ITEM.GET.toString())
+                                && !displayItem.type.isAir) {
+                            player.inventory.addItem(displayItem.clone())
                         }
                     }
                 }
