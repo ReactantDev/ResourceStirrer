@@ -61,7 +61,7 @@ data class AnimationMeta(
 
             override fun read(reader: JsonReader): List<AnimationFrame> {
                 return when (reader.peek()) {
-                    JsonToken.NULL -> listOf()
+                    JsonToken.NULL -> reader.nextNull().let { listOf<AnimationFrame>() }
                     JsonToken.BEGIN_ARRAY -> {
                         val frames = listOf<AnimationFrame>()
                         reader.beginArray()

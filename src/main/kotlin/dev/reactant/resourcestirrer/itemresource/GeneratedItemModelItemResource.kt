@@ -10,7 +10,7 @@ interface GeneratedItemModelItemResource<T> {
 }
 
 
-typealias ItemModelModifier = (ItemModel).() -> Unit
+typealias ItemModelModifier = (ItemModel) -> Unit
 
 object ItemModelModifiers {
 
@@ -20,28 +20,32 @@ object ItemModelModifiers {
      * For example: scaleBySlotSize(2,3) mean the item will be scaled to 2x3 slot size
      */
     fun scaleBySlotSize(width: Double, height: Double,
-                        scalingTypes: List<ItemModel.DisplayType> = listOf(gui)): (ItemModel).() -> Unit = {
-        display {
-            scalingTypes.map { it.displayPositionGetter(this) }.forEach { displayPosition ->
-                displayPosition {
-                    scale(1.13 * width, 1.13 * height, scale?.let { it[2] } ?: 0.0)
+                        scalingTypes: List<ItemModel.DisplayType> = listOf(gui)): ItemModelModifier = {
+        it.apply {
+            display {
+                scalingTypes.map { it.displayPositionGetter(this) }.forEach { displayPosition ->
+                    displayPosition {
+                        scale(1.13 * width, 1.13 * height, scale?.let { it[2] } ?: 0.0)
+                    }
                 }
             }
         }
     }
 
-    fun scaleBySlotSize(width: Int, height: Int, scalingTypes: List<ItemModel.DisplayType>) =
+    fun scaleBySlotSize(width: Int, height: Int, scalingTypes: List<ItemModel.DisplayType> = listOf(gui)) =
             scaleBySlotSize(width.toDouble(), height.toDouble(), scalingTypes)
 
     /**
      * Move the texture based on the slot size, initial is at center
      */
     fun translateBySlotSize(x: Double, y: Double,
-                            scalingTypes: List<ItemModel.DisplayType> = listOf(gui)): (ItemModel).() -> Unit = {
-        display {
-            scalingTypes.map { it.displayPositionGetter(this) }.forEach { displayPosition ->
-                displayPosition {
-                    translation(x * 18, y * 18, translation?.let { it[2] } ?: 0.0)
+                            scalingTypes: List<ItemModel.DisplayType> = listOf(gui)): ItemModelModifier = {
+        it.apply {
+            display {
+                scalingTypes.map { it.displayPositionGetter(this) }.forEach { displayPosition ->
+                    displayPosition {
+                        translation(x * 18, y * 18, translation?.let { it[2] } ?: 0.0)
+                    }
                 }
             }
         }
