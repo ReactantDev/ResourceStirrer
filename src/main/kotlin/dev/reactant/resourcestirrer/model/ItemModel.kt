@@ -58,19 +58,19 @@ data class ItemModel(
         }
 
         fun gui(content: DisplayPosition.() -> Unit): DisplayPosition {
-            return (this.gui ?: DisplayPosition().also { thirdperson_righthand = it }).apply(content)
+            return (this.gui ?: DisplayPosition().also { gui = it }).apply(content)
         }
 
         fun head(content: DisplayPosition.() -> Unit): DisplayPosition {
-            return (this.head ?: DisplayPosition().also { thirdperson_righthand = it }).apply(content)
+            return (this.head ?: DisplayPosition().also { head = it }).apply(content)
         }
 
         fun ground(content: DisplayPosition.() -> Unit): DisplayPosition {
-            return (this.ground ?: DisplayPosition().also { thirdperson_righthand = it }).apply(content)
+            return (this.ground ?: DisplayPosition().also { ground = it }).apply(content)
         }
 
         fun fixed(content: DisplayPosition.() -> Unit): DisplayPosition {
-            return (this.thirdperson_righthand ?: DisplayPosition().also { thirdperson_righthand = it }).apply(content)
+            return (this.fixed ?: DisplayPosition().also { fixed = it }).apply(content)
         }
     }
 
