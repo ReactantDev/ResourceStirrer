@@ -53,7 +53,7 @@ class ItemResourceWritingTask(
 
                     // Replace model file var
                     copiedModelFile.readText()
-                            .replace("\${dir}", itemResourceIdentifier)
+                            .replace("{{prefix}}", itemResourceIdentifier)
                             .let { copiedModelFile.writeText(it) }
 
                     // Copy textures file

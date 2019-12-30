@@ -15,7 +15,8 @@ import java.io.InputStreamReader
 
 open class ClassLoaderItemResource(
         private val resourceLoader: ClassLoaderResourceLoader,
-        private val searchAt: String,
+        private val modelPath: String?,
+        private val textureLayersPath: List<String>,
         override val identifier: String,
         override val baseItem: Material?,
         override val baseResource: ItemResource?,
@@ -24,21 +25,28 @@ open class ClassLoaderItemResource(
 
     override var itemModel = DEFAULT_ITEM_MODEL.copy().apply {
         textures {
-            layer0 = "stirred:\${dir}/texture"
+            textureLayersPath.forEachIndexed { layer, _ ->
+                "layer$layer"("stirred:{{prefix}}/layer$layer")
+            }
         }
     }
 
 
-    val animationMeta: AnimationMeta? = null
+    val animationMeta: HashMap<Int, AnimationMeta> = hashMapOf()
 
     override var allocatedCustomModelData: Int? = null
 
 
     private val modelFileInputStream: InputStream?
-        get() = resourceLoader.getResourceFile("${searchAt}.json")
+        get() = resourceLoader.getResourceFile("$modelPath.json")
 
-    private val animationMetaInputStream: InputStream?
-        get() = resourceLoader.getResourceFile("${searchAt}.png.mcmeta")
+    /**
+     * Aniatiom meta by layer
+     */
+    private val animationMetaInputStream: Map<Int, InputStream?>
+        get() = textureLayersPath.mapIndexedNotNull { layer, path ->
+            resourceLoader.getResourceFile("$path.png.mcmeta")?.let { input -> layer to input }
+        }.toMap()
 
     /**
      * Read only, changes will not affect anything
@@ -56,8 +64,11 @@ open class ClassLoaderItemResource(
      * Read only, changes will not affect anything
      * @return null if a item model file cannot be find
      */
-    val originalAnimationMeta: AnimationMeta?
-        get() = animationMetaInputStream?.use { InputStreamReader(it).use { GSON.fromJson(it, AnimationMeta::class.java) } }
+    val originalAnimationMeta: Map<Int, AnimationMeta?>
+        get() = animationMetaInputStream.mapValues { (_, inputStream) ->
+            inputStream
+                    ?.use { InputStreamReader(it).use { GSON.fromJson(it, AnimationMeta::class.java) } }
+        }
 
     /**
      * The original item model will be not used in resource pack outputting if true and animationMeta is not null
@@ -74,18 +85,20 @@ open class ClassLoaderItemResource(
     }
 
     override fun writeTextureFiles(path: String) {
-        extractFileFromLoader("$searchAt.png", "$path/texture.png")
-                ?: throw IllegalArgumentException("Texture file not found (identifier: ${identifier}, missing file: ${searchAt})")
+        textureLayersPath.forEachIndexed { layer, texturePath ->
+            extractFileFromLoader("$texturePath.png", "$path/layer$layer.png")
+                    ?: throw IllegalArgumentException("Texture file not found (identifier: ${identifier}, missing file: $texturePath)")
 
 
-        val animationMetaFile = File("$path/texture.png.mcmeta")
-        fun animationOutputFromObject() = animationMeta?.toJson()
-                ?.let { FileWriter(animationMetaFile, false).use { writer -> writer.write(it) } }
+            val outputAnimationMetaFile = File("$path/layer$layer.png.mcmeta")
+            fun animationOutputFromObject() = animationMeta[layer]?.toJson()
+                    ?.let { FileWriter(outputAnimationMetaFile, false).use { writer -> writer.write(it) } }
 
-        fun animationOutputFromFile() = animationMetaInputStream?.use { input -> input.outputTo(animationMetaFile) }
-        when {
-            ignoreOriginalAnimationMeta && animationMeta != null -> animationOutputFromObject()
-            else -> animationOutputFromFile() ?: animationOutputFromObject()
+            fun animationOutputFromFile() = animationMetaInputStream[layer]?.use { input -> input.outputTo(outputAnimationMetaFile) }
+            when {
+                ignoreOriginalAnimationMeta && animationMeta[layer] != null -> animationOutputFromObject()
+                else -> animationOutputFromFile() ?: animationOutputFromObject()
+            }
         }
     }
 
@@ -99,6 +112,29 @@ open class ClassLoaderItemResource(
     }
 }
 
-fun ItemResourcesTable.byClassLoader(searchAt: String, itemResourceIdentifier: String?,
+/**
+ * Use for single layer resource, assume item model and animation meta having same prefix like texture path
+ * For example:
+ *      When: texturePath = "text"
+ *      Then: texture = "text.png", itemModel = "text.json", animationMeta = "text.png.mcmeta"
+ */
+fun ItemResourcesTable.byClassLoader(texturePath: String, itemResourceIdentifier: String?,
                                      baseItem: Material?, predicate: Map<String, Any> = mapOf()) =
-        ClassLoaderItemResource(this.resourceLoader, searchAt, "${this.identifierPrefix}-$itemResourceIdentifier", baseItem, null, predicate)
+        ClassLoaderItemResource(this.resourceLoader, texturePath, listOf(texturePath),
+                "${this.identifierPrefix}-$itemResourceIdentifier", baseItem, null, predicate)
+
+/**
+ * Use for multiple layer resource
+ */
+
+fun ItemResourcesTable.byClassLoader(itemModelPath: String?, layerTexturePath: List<String>, itemResourceIdentifier: String?,
+                                     baseItem: Material?, predicate: Map<String, Any> = mapOf()) =
+        ClassLoaderItemResource(this.resourceLoader, itemModelPath, layerTexturePath,
+                "${this.identifierPrefix}-$itemResourceIdentifier", baseItem, null, predicate)
+
+/**
+ * Use for multiple layer resource without providing itmModel
+ */
+fun ItemResourcesTable.byClassLoader(layerTexturePath: List<String>, itemResourceIdentifier: String?,
+                                     baseItem: Material?, predicate: Map<String, Any> = mapOf()) =
+        byClassLoader(null, layerTexturePath, itemResourceIdentifier, baseItem, predicate)

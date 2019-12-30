@@ -4,12 +4,18 @@ import com.google.gson.Gson
 
 data class ItemModel(
         var parent: String = "item/generated",
-        var textures: Textures? = null,
+        var textures: HashMap<String, String>? = null,
         var display: Display? = null,
         var elements: Array<Element>? = null
 ) {
-    fun textures(content: Textures.() -> Unit): Textures {
-        return (textures ?: Textures().also { textures = it }).apply(content)
+    fun textures(content: TexturesDSL.() -> Unit): TexturesDSL {
+        return (textures ?: HashMap<String, String>().also { textures = it }).let { TexturesDSL(it).apply(content) }
+    }
+
+    class TexturesDSL(val textures: HashMap<String, String>) {
+        operator fun String.invoke(path: String) {
+            textures[this] = path
+        }
     }
 
     fun display(content: Display.() -> Unit): Display {
@@ -121,17 +127,6 @@ data class ItemModel(
             this.scale = arrayOf(x, y, z)
         }
     }
-
-
-    class Textures(
-            var layer0: String? = null,
-            var layer1: String? = null,
-            var layer2: String? = null,
-            var layer3: String? = null,
-            var layer4: String? = null,
-            var layer5: String? = null,
-            var particle: String? = null
-    )
 
     companion object {
         private val GSON = Gson()
