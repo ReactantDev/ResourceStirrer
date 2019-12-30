@@ -16,7 +16,7 @@ import java.io.InputStreamReader
 open class ClassLoaderItemResource(
         private val resourceLoader: ClassLoaderResourceLoader,
         private val modelPath: String?,
-        private val textureLayersPath: List<String>,
+        private val textureLayersPath: Map<Int, String>,
         override val identifier: String,
         override val baseItem: Material?,
         override val baseResource: ItemResource?,
@@ -25,7 +25,7 @@ open class ClassLoaderItemResource(
 
     override var itemModel = DEFAULT_ITEM_MODEL.copy().apply {
         textures {
-            textureLayersPath.forEachIndexed { layer, _ ->
+            textureLayersPath.keys.forEach { layer ->
                 "layer$layer"("stirred:{{prefix}}/layer$layer")
             }
         }
@@ -44,8 +44,8 @@ open class ClassLoaderItemResource(
      * Aniatiom meta by layer
      */
     private val animationMetaInputStream: Map<Int, InputStream?>
-        get() = textureLayersPath.mapIndexedNotNull { layer, path ->
-            resourceLoader.getResourceFile("$path.png.mcmeta")?.let { input -> layer to input }
+        get() = textureLayersPath.mapNotNull { (layer, texturePath) ->
+            resourceLoader.getResourceFile("$texturePath.png.mcmeta")?.let { input -> layer to input }
         }.toMap()
 
     /**
@@ -85,7 +85,7 @@ open class ClassLoaderItemResource(
     }
 
     override fun writeTextureFiles(path: String) {
-        textureLayersPath.forEachIndexed { layer, texturePath ->
+        textureLayersPath.forEach { (layer, texturePath) ->
             extractFileFromLoader("$texturePath.png", "$path/layer$layer.png")
                     ?: throw IllegalArgumentException("Texture file not found (identifier: ${identifier}, missing file: $texturePath)")
 
@@ -120,14 +120,14 @@ open class ClassLoaderItemResource(
  */
 fun ItemResourcesTable.byClassLoader(texturePath: String, itemResourceIdentifier: String?,
                                      baseItem: Material?, predicate: Map<String, Any> = mapOf()) =
-        ClassLoaderItemResource(this.resourceLoader, texturePath, listOf(texturePath),
+        ClassLoaderItemResource(this.resourceLoader, texturePath, mapOf(0 to texturePath),
                 "${this.identifierPrefix}-$itemResourceIdentifier", baseItem, null, predicate)
 
 /**
  * Use for multiple layer resource
  */
 
-fun ItemResourcesTable.byClassLoader(itemModelPath: String?, layerTexturePath: List<String>, itemResourceIdentifier: String?,
+fun ItemResourcesTable.byClassLoader(itemModelPath: String?, layerTexturePath: Map<Int, String>, itemResourceIdentifier: String?,
                                      baseItem: Material?, predicate: Map<String, Any> = mapOf()) =
         ClassLoaderItemResource(this.resourceLoader, itemModelPath, layerTexturePath,
                 "${this.identifierPrefix}-$itemResourceIdentifier", baseItem, null, predicate)
@@ -135,6 +135,6 @@ fun ItemResourcesTable.byClassLoader(itemModelPath: String?, layerTexturePath: L
 /**
  * Use for multiple layer resource without providing itmModel
  */
-fun ItemResourcesTable.byClassLoader(layerTexturePath: List<String>, itemResourceIdentifier: String?,
+fun ItemResourcesTable.byClassLoader(layerTexturePath: Map<Int, String>, itemResourceIdentifier: String?,
                                      baseItem: Material?, predicate: Map<String, Any> = mapOf()) =
         byClassLoader(null, layerTexturePath, itemResourceIdentifier, baseItem, predicate)
