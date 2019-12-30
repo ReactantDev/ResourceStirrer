@@ -18,7 +18,7 @@ abstract class ItemResourcesTable(
     open val tableHeader: TableHeader get() = TableHeader(identifierPrefix, resourceLoader)
 
     abstract class ItemResourcesGroup(_tableHeader: TableHeader, _identifierPrefix: String? = "")
-        : ItemResourcesTable(_tableHeader.identifierPrefix + _identifierPrefix, _tableHeader.resourceLoader) {
+        : ItemResourcesTable("${_tableHeader.identifierPrefix}-$_identifierPrefix", _tableHeader.resourceLoader) {
         override val tableHeader: TableHeader get() = TableHeader(identifierPrefix, resourceLoader)
     }
 

@@ -25,8 +25,9 @@ open class ClassLoaderItemResource(
 
     override var itemModel = DEFAULT_ITEM_MODEL.copy().apply {
         textures {
-            textureLayersPath.keys.forEach { layer ->
-                "layer$layer"("stirred:{{prefix}}/layer$layer")
+            (0..(textureLayersPath.keys.max() ?: 0)).forEach { layer ->
+                if (textureLayersPath.contains(layer)) "layer$layer"("stirred:{{prefix}}/layer$layer")
+                else "layer$layer"("stirred:default-blank/layer0")
             }
         }
     }
