@@ -119,23 +119,23 @@ open class ClassLoaderItemResource(
  *      When: texturePath = "text"
  *      Then: texture = "text.png", itemModel = "text.json", animationMeta = "text.png.mcmeta"
  */
-fun ItemResourcesTable.byClassLoader(texturePath: String, itemResourceIdentifier: String?,
+fun ItemResourcesTable.byClassLoader(texturePath: String, itemResourceIdentifier: String,
                                      baseItem: Material?, predicate: Map<String, Any> = mapOf()) =
         ClassLoaderItemResource(this.resourceLoader, texturePath, mapOf(0 to texturePath),
-                "${this.identifierPrefix}-$itemResourceIdentifier", baseItem, null, predicate)
+                getIdentifier(itemResourceIdentifier), baseItem, null, predicate)
 
 /**
  * Use for multiple layer resource
  */
 
-fun ItemResourcesTable.byClassLoader(itemModelPath: String?, layerTexturePath: Map<Int, String>, itemResourceIdentifier: String?,
+fun ItemResourcesTable.byClassLoader(itemModelPath: String?, layerTexturePath: Map<Int, String>, itemResourceIdentifier: String,
                                      baseItem: Material?, predicate: Map<String, Any> = mapOf()) =
         ClassLoaderItemResource(this.resourceLoader, itemModelPath, layerTexturePath,
-                "${this.identifierPrefix}-$itemResourceIdentifier", baseItem, null, predicate)
+                getIdentifier(itemResourceIdentifier), baseItem, null, predicate)
 
 /**
  * Use for multiple layer resource without providing itmModel
  */
-fun ItemResourcesTable.byClassLoader(layerTexturePath: Map<Int, String>, itemResourceIdentifier: String?,
+fun ItemResourcesTable.byClassLoader(layerTexturePath: Map<Int, String>, itemResourceIdentifier: String,
                                      baseItem: Material?, predicate: Map<String, Any> = mapOf()) =
-        byClassLoader(null, layerTexturePath, itemResourceIdentifier, baseItem, predicate)
+        byClassLoader(null, layerTexturePath, getIdentifier(itemResourceIdentifier), baseItem, predicate)

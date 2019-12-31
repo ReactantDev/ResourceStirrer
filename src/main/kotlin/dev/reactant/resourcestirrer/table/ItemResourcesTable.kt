@@ -4,6 +4,7 @@ import dev.reactant.resourcestirrer.itemresource.ItemResource
 import dev.reactant.resourcestirrer.resourceloader.ClassLoaderResourceLoader
 import kotlin.reflect.KTypeProjection
 import kotlin.reflect.KVariance
+import kotlin.reflect.KVisibility
 import kotlin.reflect.full.createType
 import kotlin.reflect.full.declaredMemberProperties
 
@@ -30,6 +31,7 @@ abstract class ItemResourcesTable(
                 .mapNotNull { it.objectInstance }
 
         val properties = this::class.declaredMemberProperties
+                .filter { it.visibility == KVisibility.PUBLIC }
                 .mapNotNull { it.getter.call(this) }
 
         return walk(objectInstances.union(properties).iterator()).iterator()
