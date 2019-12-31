@@ -26,8 +26,8 @@ open class ClassLoaderItemResource(
     override var itemModel = DEFAULT_ITEM_MODEL.copy().apply {
         textures {
             (0..(textureLayersPath.keys.max() ?: 0)).forEach { layer ->
-                if (textureLayersPath.contains(layer)) "layer$layer"("stirred:{{prefix}}/layer$layer")
-                else "layer$layer"("stirred:default-blank/layer0")
+                if (textureLayersPath.contains(layer)) "layer$layer"("stirred:{{prefix}}-layer$layer")
+                else "layer$layer"("stirred:default-blank-layer0")
             }
         }
     }
@@ -87,11 +87,11 @@ open class ClassLoaderItemResource(
 
     override fun writeTextureFiles(path: String) {
         textureLayersPath.forEach { (layer, texturePath) ->
-            extractFileFromLoader("$texturePath.png", "$path/layer$layer.png")
+            extractFileFromLoader("$texturePath.png", "$path-layer$layer.png")
                     ?: throw IllegalArgumentException("Texture file not found (identifier: ${identifier}, missing file: $texturePath)")
 
 
-            val outputAnimationMetaFile = File("$path/layer$layer.png.mcmeta")
+            val outputAnimationMetaFile = File("$path-layer$layer.png.mcmeta")
             fun animationOutputFromObject() = animationMeta[layer]?.toJson()
                     ?.let { FileWriter(outputAnimationMetaFile, false).use { writer -> writer.write(it) } }
 

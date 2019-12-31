@@ -22,7 +22,6 @@ abstract class ItemResourcesTable(
         override val tableHeader: TableHeader get() = TableHeader(identifierPrefix, resourceLoader)
     }
 
-
     /**
      * Explore the fields of the table by reflection
      */

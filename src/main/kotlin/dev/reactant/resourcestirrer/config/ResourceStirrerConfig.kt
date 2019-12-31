@@ -4,6 +4,8 @@ class ResourceStirrerConfig {
     var customDataRange = ResourceStirrerCustomDataRange()
     var updateOnStart = false
 
+    var uglify = true
+
     var development = DevelopmentConfig()
 
     class DevelopmentConfig {

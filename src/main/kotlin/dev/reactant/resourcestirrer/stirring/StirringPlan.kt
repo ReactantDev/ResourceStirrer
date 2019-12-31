@@ -19,6 +19,11 @@ class StirringPlan() {
 
     lateinit var resourcePackSha1: ByteArray;
 
+    /**
+     * Mapping between identifier and uglify name
+     */
+    var identifierPrefixMapping: HashMap<String, String> = HashMap()
+
     lateinit var lostReferenceCustomData: Map<String, String>
 
     /**

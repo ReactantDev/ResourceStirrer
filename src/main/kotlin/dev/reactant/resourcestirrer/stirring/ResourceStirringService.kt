@@ -127,6 +127,6 @@ class ResourceStirringService private constructor(
     private val baseResourcePack: File get() = File("${ResourceStirrer.configFolder}/base/").also { if (!it.exists()) it.mkdir() }
 
 
-    private val lockPath get() = "${ResourceStirrer.configFolder}/stirrer-meta-lock.json"
+    private val lockPath get() = "${ResourceStirrer.configFolder}/stirrer-model-data-lock.json"
     private val configPath get() = "${ResourceStirrer.configFolder}/config.json"
 }

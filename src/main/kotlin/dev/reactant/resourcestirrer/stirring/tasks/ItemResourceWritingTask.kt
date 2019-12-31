@@ -14,6 +14,8 @@ import java.io.File
 import java.io.FileReader
 import java.io.FileWriter
 import java.io.InputStream
+import java.util.*
+import kotlin.collections.HashMap
 
 
 @Component
@@ -43,8 +45,15 @@ class ItemResourceWritingTask(
                 .forEach { (itemResourceIdentifier, _) ->
                     val itemResource = itemResourceService.getItem(itemResourceIdentifier)!!
                     val assetsPath = "${workingDirectory.absolutePath}/assets/${ResourceStirringTask.ASSETS_NAME_SPACE}";
-                    val textureFolderPath = "$assetsPath/textures/$itemResourceIdentifier"
-                    val modelFilePath = "$assetsPath/models/$itemResourceIdentifier.json"
+
+                    val outputPrefix = when {
+                        stirringPlan.resourceStirrerConfig.content.uglify && !itemResourceIdentifier.startsWith("default-") -> UUID.randomUUID().toString()
+                        else -> itemResourceIdentifier
+                    }
+                    stirringPlan.identifierPrefixMapping[itemResourceIdentifier] = outputPrefix
+
+                    val texturePrefix = "$assetsPath/textures/$outputPrefix"
+                    val modelFilePath = "$assetsPath/models/$outputPrefix.json"
 
                     // Copy model file
                     val copiedModelFile = File(modelFilePath);
@@ -53,11 +62,11 @@ class ItemResourceWritingTask(
 
                     // Replace model file var
                     copiedModelFile.readText()
-                            .replace("{{prefix}}", itemResourceIdentifier)
+                            .replace("{{prefix}}", outputPrefix)
                             .let { copiedModelFile.writeText(it) }
 
                     // Copy textures file
-                    itemResource.writeTextureFiles(textureFolderPath)
+                    itemResource.writeTextureFiles(texturePrefix)
                 }
         rewriteMainModelFile(stirringPlan).blockingAwait()
     }
@@ -79,6 +88,7 @@ class ItemResourceWritingTask(
 
                         // create folder if not yet created
                         if (!materialModelFile.parentFile.exists()) materialModelFile.parentFile.mkdirs();
+                        File("${ResourceStirrer.configFolder}/models/item/").let { if (!it.exists()) it.mkdirs() }
                         val defaultModelFile = File("${ResourceStirrer.configFolder}/models/item/$material.json");
 
                         // if default model (minecraft's model) isn't provided
@@ -101,7 +111,8 @@ class ItemResourceWritingTask(
                         val predicates = HashMap(itemResource.predicate)
                         predicates["custom_model_data"] = customData;
                         overrideObj.add("predicate", gson.toJsonTree(predicates).asJsonObject)
-                        overrideObj.addProperty("model", "${ResourceStirringTask.ASSETS_NAME_SPACE}:${itemResource.identifier}")
+                        val modelPath = stirringPlan.identifierPrefixMapping[itemResource.identifier]
+                        overrideObj.addProperty("model", "${ResourceStirringTask.ASSETS_NAME_SPACE}:$modelPath")
                         overrides.add(overrideObj);
 
                         FileWriter(materialModelFile).use { writer -> gson.toJson(it, writer) }
