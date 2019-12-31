@@ -12,15 +12,12 @@ abstract class ItemResourcesTable(
         private val _resourceLoader: ClassLoaderResourceLoader? = null
 ) : Iterable<ItemResource> {
     val resourceLoader get() = _resourceLoader ?: ClassLoaderResourceLoader(this.javaClass.classLoader)
+    private val outputPrefix = identifierPrefix.let { if (it.isBlank()) "" else "$it-" }
 
-    class TableHeader(val identifierPrefix: String, val resourceLoader: ClassLoaderResourceLoader?)
+    fun getIdentifier(suffix: String) = "$outputPrefix$suffix"
 
-    open val tableHeader: TableHeader get() = TableHeader(identifierPrefix, resourceLoader)
-
-    abstract class ItemResourcesGroup(_tableHeader: TableHeader, _identifierPrefix: String? = "")
-        : ItemResourcesTable("${_tableHeader.identifierPrefix}-$_identifierPrefix", _tableHeader.resourceLoader) {
-        override val tableHeader: TableHeader get() = TableHeader(identifierPrefix, resourceLoader)
-    }
+    abstract class ItemResourcesGroup(parent: ItemResourcesTable, _identifierPrefix: String = "")
+        : ItemResourcesTable(parent.getIdentifier(_identifierPrefix), parent.resourceLoader)
 
     /**
      * Explore the fields of the table by reflection

@@ -14,43 +14,72 @@ typealias ItemModelModifier = (ItemModel) -> Unit
 
 object ItemModelModifiers {
 
+    fun scale(width: Double, height: Double, depth: Double? = null, types: List<ItemModel.DisplayType>): ItemModelModifier = {
+        it.apply {
+            display {
+                types.map { it.displayPositionGetter(this) }.forEach { displayPosition ->
+                    displayPosition {
+                        scale(width, height, depth ?: scale?.let { it[2] } ?: 0.0)
+                    }
+                }
+            }
+        }
+    }
+
+    fun scale(width: Int, height: Int, depth: Int? = null, scalingTypes: List<ItemModel.DisplayType>) = scale(width.toDouble(), height.toDouble(), depth?.toDouble(), scalingTypes)
+
     /**
      * Scale the texture based on slot size (included border width)
+     * The relation between item normal scale and the full slot scale in gui is about 1:1.13
      * @param scalingTypes The display types that will apply the scaling
      * For example: scaleBySlotSize(2,3) mean the item will be scaled to 2x3 slot size
      */
-    fun scaleBySlotSize(width: Double, height: Double,
-                        scalingTypes: List<ItemModel.DisplayType> = listOf(gui)): ItemModelModifier = {
+    fun scaleAsGUI(width: Double, height: Double,
+                   scalingTypes: List<ItemModel.DisplayType> = listOf(gui)): ItemModelModifier = scale(width * 1.13, height * 1.13, null, scalingTypes)
+
+    fun scaleAsGUI(width: Int, height: Int, scalingTypes: List<ItemModel.DisplayType> = listOf(gui)) =
+            scaleAsGUI(width.toDouble(), height.toDouble(), scalingTypes)
+
+
+    fun translation(x: Double, y: Double, z: Double? = null,
+                    types: List<ItemModel.DisplayType>): ItemModelModifier = {
         it.apply {
             display {
-                scalingTypes.map { it.displayPositionGetter(this) }.forEach { displayPosition ->
+                types.map { it.displayPositionGetter(this) }.forEach { displayPosition ->
                     displayPosition {
-                        scale(1.13 * width, 1.13 * height, scale?.let { it[2] } ?: 0.0)
+                        translation(x * 18, y * 18, z ?: translation?.let { it[2] } ?: 0.0)
                     }
                 }
             }
         }
     }
 
-    fun scaleBySlotSize(width: Int, height: Int, scalingTypes: List<ItemModel.DisplayType> = listOf(gui)) =
-            scaleBySlotSize(width.toDouble(), height.toDouble(), scalingTypes)
+    fun translation(x: Int, y: Int, z: Int? = null, types: List<ItemModel.DisplayType>) =
+            translation(x.toDouble(), y.toDouble(), z?.toDouble(), types)
 
     /**
      * Move the texture based on the slot size, initial is at center
+     * To move an item from original position to another slot, it need around 18 unit of translation
      */
-    fun translateBySlotSize(x: Double, y: Double,
-                            scalingTypes: List<ItemModel.DisplayType> = listOf(gui)): ItemModelModifier = {
+    fun translationAsGUI(x: Double, y: Double, z: Double? = null, types: List<ItemModel.DisplayType> = listOf(gui))
+            : ItemModelModifier = translation(x * 18, y * 18, z, types)
+
+    fun translationAsGUI(x: Int, y: Int, z: Int? = null, types: List<ItemModel.DisplayType> = listOf(gui))
+            : (ItemModel).() -> Unit = translationAsGUI(x.toDouble(), y.toDouble(), z?.toDouble(), types)
+
+
+    fun rotation(x: Double, y: Double, z: Double? = null, types: List<ItemModel.DisplayType>): ItemModelModifier = {
         it.apply {
             display {
-                scalingTypes.map { it.displayPositionGetter(this) }.forEach { displayPosition ->
+                types.map { it.displayPositionGetter(this) }.forEach { displayPosition ->
                     displayPosition {
-                        translation(x * 18, y * 18, translation?.let { it[2] } ?: 0.0)
+                        rotation(x, y, z ?: translation?.let { it[2] } ?: 0.0)
                     }
                 }
             }
         }
     }
 
-    fun translateBySlotSize(x: Int, y: Int, scalingTypes: List<ItemModel.DisplayType> =
-            listOf(gui)): (ItemModel).() -> Unit = translateBySlotSize(x.toDouble(), y.toDouble(), scalingTypes)
+    fun rotation(x: Int, y: Int, z: Int? = null, types: List<ItemModel.DisplayType>) = rotation(x.toDouble(), y.toDouble(), z?.toDouble(), types)
+
 }
