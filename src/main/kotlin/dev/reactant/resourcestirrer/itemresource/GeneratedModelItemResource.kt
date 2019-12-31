@@ -1,28 +1,31 @@
 package dev.reactant.resourcestirrer.itemresource
 
+import dev.reactant.resourcestirrer.model.AnimationMeta
 import dev.reactant.resourcestirrer.model.ItemModel
 import dev.reactant.resourcestirrer.model.ItemModel.DisplayTypes.gui
 
 @Suppress("UNCHECKED_CAST")
-interface GeneratedItemModelItemResource<T> {
+interface GeneratedModelItemResource<T> {
     var itemModel: ItemModel
-    fun applyModifier(modifier: ItemModelModifier): T = this.itemModel.apply(modifier).let { this as T }
+    val largestLayer: Int
+    val animationMeta: HashMap<Int, AnimationMeta>
+    fun applyModifier(modifier: ItemResourceModifier): T = this.apply(modifier).let { this as T }
 }
 
 
-typealias ItemModelModifier = (ItemModel) -> Unit
+typealias ItemResourceModifier = (GeneratedModelItemResource<*>) -> Unit
 
 object ItemModelModifiers {
 
-    private fun positionModifier(types: List<ItemModel.DisplayType>, modify: ItemModel.DisplayPosition.() -> Unit): ItemModelModifier = {
-        it.apply {
+    private fun positionModifier(types: List<ItemModel.DisplayType>, modify: ItemModel.DisplayPosition.() -> Unit): ItemResourceModifier = {
+        it.itemModel.apply {
             display {
                 types.map { it.displayPositionGetter(this) }.forEach { displayPosition -> displayPosition(modify) }
             }
         }
     }
 
-    fun scale(x: Double?, y: Double?, z: Double?, types: List<ItemModel.DisplayType>): ItemModelModifier =
+    fun scale(x: Double?, y: Double?, z: Double?, types: List<ItemModel.DisplayType>): ItemResourceModifier =
             positionModifier(types) {
                 scale(
                         x ?: scale?.let { it[0] } ?: 0.0,
@@ -48,7 +51,7 @@ object ItemModelModifiers {
 
 
     fun translation(x: Double?, y: Double?, z: Double? = null,
-                    types: List<ItemModel.DisplayType>): ItemModelModifier =
+                    types: List<ItemModel.DisplayType>): ItemResourceModifier =
             positionModifier(types) {
                 translation(
                         x ?: translation?.let { it[0] } ?: 0.0,
@@ -72,7 +75,7 @@ object ItemModelModifiers {
             translationAsGUI(x.toDouble(), y.toDouble(), z?.toDouble(), types)
 
 
-    fun rotation(x: Double?, y: Double?, z: Double? = null, types: List<ItemModel.DisplayType>): ItemModelModifier =
+    fun rotation(x: Double?, y: Double?, z: Double? = null, types: List<ItemModel.DisplayType>): ItemResourceModifier =
             positionModifier(types) {
                 rotation(
                         x ?: rotation?.let { it[0] } ?: 0.0,
@@ -83,5 +86,18 @@ object ItemModelModifiers {
 
     fun rotation(x: Int?, y: Int?, z: Int? = null, types: List<ItemModel.DisplayType>) =
             rotation(x?.toDouble(), y?.toDouble(), z?.toDouble(), types)
+
+}
+
+object AnimationModifiers {
+    fun frametime(frametime: Int): ItemResourceModifier = { res ->
+        (0..res.largestLayer).forEach {
+            res.animationMeta.getOrPut(it, { AnimationMeta() }).apply {
+                animation {
+                    this.frametime = frametime
+                }
+            }
+        }
+    }
 
 }

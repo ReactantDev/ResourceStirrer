@@ -17,6 +17,10 @@ data class AnimationMeta(
         return GSON.toJson(this, AnimationMeta::class.java)
     }
 
+    fun animation(content: Animation.() -> Unit) {
+        (this.animation ?: Animation().also { animation = it }).apply(content)
+    }
+
 
     data class Animation(
             var interpolate: Boolean? = null,

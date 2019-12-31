@@ -21,11 +21,11 @@ open class ClassLoaderItemResource(
         override val baseItem: Material?,
         override val baseResource: ItemResource?,
         override val predicate: Map<String, Any>
-) : ItemResource, GeneratedItemModelItemResource<ClassLoaderItemResource> {
-
+) : ItemResource, GeneratedModelItemResource<ClassLoaderItemResource> {
+    override val largestLayer = textureLayersPath.keys.max() ?: 0
     override var itemModel = DEFAULT_ITEM_MODEL.copy().apply {
         textures {
-            (0..(textureLayersPath.keys.max() ?: 0)).forEach { layer ->
+            (0..largestLayer).forEach { layer ->
                 if (textureLayersPath.contains(layer)) "layer$layer"("stirred:{{prefix}}-layer$layer")
                 else "layer$layer"("stirred:default-blank-layer0")
             }
@@ -33,7 +33,7 @@ open class ClassLoaderItemResource(
     }
 
 
-    val animationMeta: HashMap<Int, AnimationMeta> = hashMapOf()
+    override val animationMeta: HashMap<Int, AnimationMeta> = hashMapOf()
 
     override var allocatedCustomModelData: Int? = null
 
