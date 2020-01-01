@@ -16,24 +16,23 @@ import java.io.InputStreamReader
 open class ClassLoaderItemResource(
         private val resourceLoader: ClassLoaderResourceLoader,
         private val modelPath: String?,
-        private val textureLayersPath: Map<Int, String>,
+        private val textureLayersPath: Map<String, String>,
         override val identifier: String,
         override val baseItem: Material?,
         override val baseResource: ItemResource?,
         override val predicate: Map<String, Any>
 ) : ItemResource, GeneratedModelItemResource<ClassLoaderItemResource> {
-    override val largestLayer = textureLayersPath.keys.max() ?: 0
+    override val layers = textureLayersPath.keys
     override var itemModel = DEFAULT_ITEM_MODEL.copy().apply {
         textures {
-            (0..largestLayer).forEach { layer ->
-                if (textureLayersPath.contains(layer)) "layer$layer"("stirred:{{prefix}}-layer$layer")
-                else "layer$layer"("stirred:default-blank-layer0")
+            layers.forEach { layer ->
+                layer("stirred:{{prefix}}-$layer")
             }
         }
     }
 
 
-    override val animationMeta: HashMap<Int, AnimationMeta> = hashMapOf()
+    override val animationMeta: HashMap<String, AnimationMeta> = hashMapOf()
 
     override var allocatedCustomModelData: Int? = null
 
@@ -44,7 +43,7 @@ open class ClassLoaderItemResource(
     /**
      * Aniatiom meta by layer
      */
-    private val animationMetaInputStream: Map<Int, InputStream?>
+    private val animationMetaInputStream: Map<String, InputStream?>
         get() = textureLayersPath.mapNotNull { (layer, texturePath) ->
             resourceLoader.getResourceFile("$texturePath.png.mcmeta")?.let { input -> layer to input }
         }.toMap()
@@ -65,7 +64,7 @@ open class ClassLoaderItemResource(
      * Read only, changes will not affect anything
      * @return null if a item model file cannot be find
      */
-    val originalAnimationMeta: Map<Int, AnimationMeta?>
+    val originalAnimationMeta: Map<String, AnimationMeta?>
         get() = animationMetaInputStream.mapValues { (_, inputStream) ->
             inputStream
                     ?.use { InputStreamReader(it).use { GSON.fromJson(it, AnimationMeta::class.java) } }
@@ -87,11 +86,11 @@ open class ClassLoaderItemResource(
 
     override fun writeTextureFiles(path: String) {
         textureLayersPath.forEach { (layer, texturePath) ->
-            extractFileFromLoader("$texturePath.png", "$path-layer$layer.png")
+            extractFileFromLoader("$texturePath.png", "$path-$layer.png")
                     ?: throw IllegalArgumentException("Texture file not found (identifier: ${identifier}, missing file: $texturePath)")
 
 
-            val outputAnimationMetaFile = File("$path-layer$layer.png.mcmeta")
+            val outputAnimationMetaFile = File("$path-$layer.png.mcmeta")
             fun animationOutputFromObject() = animationMeta[layer]?.toJson()
                     ?.let { FileWriter(outputAnimationMetaFile, false).use { writer -> writer.write(it) } }
 
@@ -121,14 +120,14 @@ open class ClassLoaderItemResource(
  */
 fun ItemResourcesTable.byClassLoader(texturePath: String, itemResourceIdentifier: String,
                                      baseItem: Material?, predicate: Map<String, Any> = mapOf()) =
-        ClassLoaderItemResource(this.resourceLoader, texturePath, mapOf(0 to texturePath),
+        ClassLoaderItemResource(this.resourceLoader, texturePath, mapOf("layer0" to texturePath),
                 getIdentifier(itemResourceIdentifier), baseItem, null, predicate)
 
 /**
  * Use for multiple layer resource
  */
 
-fun ItemResourcesTable.byClassLoader(itemModelPath: String?, layerTexturePath: Map<Int, String>, itemResourceIdentifier: String,
+fun ItemResourcesTable.byClassLoader(itemModelPath: String?, layerTexturePath: Map<String, String>, itemResourceIdentifier: String,
                                      baseItem: Material?, predicate: Map<String, Any> = mapOf()) =
         ClassLoaderItemResource(this.resourceLoader, itemModelPath, layerTexturePath,
                 getIdentifier(itemResourceIdentifier), baseItem, null, predicate)
@@ -136,6 +135,6 @@ fun ItemResourcesTable.byClassLoader(itemModelPath: String?, layerTexturePath: M
 /**
  * Use for multiple layer resource without providing itmModel
  */
-fun ItemResourcesTable.byClassLoader(layerTexturePath: Map<Int, String>, itemResourceIdentifier: String,
+fun ItemResourcesTable.byClassLoader(layerTexturePath: Map<String, String>, itemResourceIdentifier: String,
                                      baseItem: Material?, predicate: Map<String, Any> = mapOf()) =
         byClassLoader(null, layerTexturePath, getIdentifier(itemResourceIdentifier), baseItem, predicate)

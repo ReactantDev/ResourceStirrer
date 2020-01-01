@@ -7,8 +7,8 @@ import dev.reactant.resourcestirrer.model.ItemModel.DisplayTypes.gui
 @Suppress("UNCHECKED_CAST")
 interface GeneratedModelItemResource<T> {
     var itemModel: ItemModel
-    val largestLayer: Int
-    val animationMeta: HashMap<Int, AnimationMeta>
+    val layers: Set<String>
+    val animationMeta: HashMap<String, AnimationMeta>
     fun applyModifier(modifier: ItemResourceModifier): T = this.apply(modifier).let { this as T }
 }
 
@@ -91,7 +91,7 @@ object ItemModelModifiers {
 
 object AnimationModifiers {
     fun frametime(frametime: Int): ItemResourceModifier = { res ->
-        (0..res.largestLayer).forEach {
+        res.layers.forEach {
             res.animationMeta.getOrPut(it, { AnimationMeta() }).apply {
                 animation {
                     this.frametime = frametime
