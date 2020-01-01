@@ -3,7 +3,7 @@ package dev.reactant.resourcestirrer.model
 import com.google.gson.Gson
 
 data class ItemModel(
-        var parent: String = "item/generated",
+        var parent: String? = null,
         var textures: HashMap<String, String>? = null,
         var display: Display? = null,
         var elements: Array<Element>? = null

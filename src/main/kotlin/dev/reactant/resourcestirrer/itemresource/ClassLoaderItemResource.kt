@@ -23,13 +23,19 @@ open class ClassLoaderItemResource(
         override val predicate: Map<String, Any>
 ) : ItemResource, GeneratedModelItemResource<ClassLoaderItemResource> {
     override val layers = textureLayersPath.keys
-    override var itemModel = DEFAULT_ITEM_MODEL.copy().apply {
-        textures {
-            layers.forEach { layer ->
-                layer("{{prefix}}-$layer")
+    override var itemModel =
+            originalItemModel?.apply {
+                textures = textures
+                        ?.mapValues { (_, path) ->
+                            if (layers.contains(path)) "{{prefix}}-$path" else path
+                        }?.let { HashMap(it) }
+            } ?: DEFAULT_ITEM_MODEL.copy().apply {
+                textures {
+                    layers.forEach { layer ->
+                        layer("{{prefix}}-$layer")
+                    }
+                }
             }
-        }
-    }
 
 
     override val animationMeta: HashMap<String, AnimationMeta> = hashMapOf()
@@ -56,9 +62,9 @@ open class ClassLoaderItemResource(
         get() = modelFileInputStream?.use { InputStreamReader(it).use { GSON.fromJson(it, ItemModel::class.java) } }
 
     /**
-     * The original item model will be not used in resource pack outputting if true and itemModel is not null
+     * True to output the original item model file directly without processing
      */
-    var ignoreOriginalItemModel = false
+    var forceApplyOriginalItemModel = false
 
     /**
      * Read only, changes will not affect anything
@@ -79,8 +85,8 @@ open class ClassLoaderItemResource(
         fun modelOutputFromObject() = FileWriter(File(path), false).use { it.write(itemModel.toJson()) }
         fun modelOutputFromFile() = this.modelFileInputStream?.use { it.outputTo(File(path)) }
         when {
-            ignoreOriginalItemModel -> modelOutputFromObject()
-            else -> modelOutputFromFile() ?: modelOutputFromObject()
+            forceApplyOriginalItemModel -> modelOutputFromFile()
+            else -> modelOutputFromObject()
         }
     }
 
@@ -107,7 +113,7 @@ open class ClassLoaderItemResource(
             ?.let { it.inputStream.use { input -> input.outputTo(File(it.fileName)) } }
 
     companion object {
-        private val DEFAULT_ITEM_MODEL = ItemModel()
+        private val DEFAULT_ITEM_MODEL = ItemModel(parent = "item/generated")
         private val GSON = Gson()
     }
 }
