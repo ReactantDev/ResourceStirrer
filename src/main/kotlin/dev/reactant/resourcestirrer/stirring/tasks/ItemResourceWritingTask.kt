@@ -46,7 +46,7 @@ class ItemResourceWritingTask(
                     val itemResource = itemResourceService.getItem(itemResourceIdentifier)!!
                     val assetsPath = "${workingDirectory.absolutePath}/assets/${ResourceStirringTask.ASSETS_NAME_SPACE}";
 
-                    val outputPrefix = when {
+                    val outputPrefix = "stirred:" + when {
                         stirringPlan.resourceStirrerConfig.content.uglify && !itemResourceIdentifier.startsWith("default-") -> UUID.randomUUID().toString()
                         else -> itemResourceIdentifier
                     }

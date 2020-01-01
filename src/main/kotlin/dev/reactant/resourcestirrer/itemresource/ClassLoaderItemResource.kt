@@ -26,7 +26,7 @@ open class ClassLoaderItemResource(
     override var itemModel = DEFAULT_ITEM_MODEL.copy().apply {
         textures {
             layers.forEach { layer ->
-                layer("stirred:{{prefix}}-$layer")
+                layer("{{prefix}}-$layer")
             }
         }
     }
