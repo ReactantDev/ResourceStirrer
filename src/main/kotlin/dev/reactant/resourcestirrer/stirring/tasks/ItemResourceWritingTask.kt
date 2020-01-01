@@ -46,7 +46,7 @@ class ItemResourceWritingTask(
                     val itemResource = itemResourceService.getItem(itemResourceIdentifier)!!
                     val assetsPath = "${workingDirectory.absolutePath}/assets/${ResourceStirringTask.ASSETS_NAME_SPACE}";
 
-                    val outputPrefix = "stirred:" + when {
+                    val outputPrefix = when {
                         stirringPlan.resourceStirrerConfig.content.uglify && !itemResourceIdentifier.startsWith("default-") -> UUID.randomUUID().toString()
                         else -> itemResourceIdentifier
                     }
@@ -62,7 +62,7 @@ class ItemResourceWritingTask(
 
                     // Replace model file var
                     copiedModelFile.readText()
-                            .replace("{{prefix}}", outputPrefix)
+                            .replace("{{prefix}}", "stirred:" + outputPrefix)
                             .let { copiedModelFile.writeText(it) }
 
                     // Copy textures file
