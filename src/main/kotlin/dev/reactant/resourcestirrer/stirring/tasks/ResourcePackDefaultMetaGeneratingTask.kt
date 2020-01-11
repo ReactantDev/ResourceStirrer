@@ -24,7 +24,7 @@ class ResourcePackDefaultMetaGeneratingTask(
     override fun start(stirringPlan: StirringPlan): Completable = Completable.fromCallable {
         val mcmetaFile = File("${workingDirectory.absolutePath}/pack.mcmeta")
         if (!mcmetaFile.exists()) {
-            configService.loadOrDefault(jsonParserService, ResourcePackMeta::class, mcmetaFile.absolutePath, ::ResourcePackMeta).blockingGet().save().blockingAwait()
+            configService.getOrDefault(jsonParserService, ResourcePackMeta::class, mcmetaFile.absolutePath, ::ResourcePackMeta).blockingGet().save().blockingAwait()
         }
     }
 }

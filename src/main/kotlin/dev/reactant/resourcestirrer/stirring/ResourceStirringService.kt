@@ -8,7 +8,7 @@ import dev.reactant.reactant.core.dependency.injection.Inject
 import dev.reactant.reactant.core.dependency.injection.components.Components
 import dev.reactant.reactant.service.spec.config.Config
 import dev.reactant.reactant.service.spec.config.ConfigService
-import dev.reactant.reactant.service.spec.config.loadOrDefault
+import dev.reactant.reactant.service.spec.config.getOrDefault
 import dev.reactant.reactant.service.spec.parser.JsonParserService
 import dev.reactant.resourcestirrer.ResourceStirrer
 import dev.reactant.resourcestirrer.collector.ItemResourceManagingService
@@ -96,12 +96,12 @@ class ResourceStirringService private constructor(
      * Load configs and history into stirring plan
      */
     private fun prepareStirringPlan(stirringPlan: StirringPlan) = configService
-            .loadOrDefault(jsonParserService, configPath, ::ResourceStirrerConfig)
+            .getOrDefault(jsonParserService, configPath, ::ResourceStirrerConfig)
             .doOnSuccess { it.save().blockingAwait(); stirringPlan.resourceStirrerConfig = it }
             .doOnSuccess { stirringPlan.baseResourcePack = baseResourcePack }
             .flatMap { readBaseResourcePackUsedIdentifiers() }
             .doOnSuccess { stirringPlan.usedIdentifiers = it }
-            .flatMap { configService.loadOrDefault(jsonParserService, lockPath, ::StirrerCustomDataLock) }
+            .flatMap { configService.getOrDefault(jsonParserService, lockPath, ::StirrerCustomDataLock) }
             .doOnSuccess { stirringPlan.stirrerCustomDataLock = it }
             .map { stirringPlan }
 
