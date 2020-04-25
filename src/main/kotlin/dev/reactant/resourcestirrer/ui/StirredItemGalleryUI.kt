@@ -12,7 +12,7 @@ import dev.reactant.reactant.ui.kits.span
 import dev.reactant.reactant.ui.query.getElementById
 import dev.reactant.reactant.utils.content.item.itemStackOf
 import dev.reactant.resourcestirrer.commands.ResourceStirrerPermission
-import dev.reactant.resourcestirrer.itemresource.ItemResource
+import dev.reactant.resourcestirrer.resourcetype.item.ItemResource
 import org.bukkit.Material
 import org.bukkit.entity.Player
 

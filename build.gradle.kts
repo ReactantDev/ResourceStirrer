@@ -5,7 +5,7 @@ import java.net.URI
 
 val isSnapshot = true
 group = "dev.reactant"
-version = "0.1.6${if (isSnapshot) "-SNAPSHOT" else ""}"
+version = "0.1.7${if (isSnapshot) "-SNAPSHOT" else ""}"
 
 val kotlinVersion = "1.3.61"
 
@@ -37,7 +37,7 @@ repositories {
 
 dependencies {
     compileOnly(kotlin("stdlib-jdk8", kotlinVersion))
-    compileOnly("dev.reactant:reactant:0.1.6-SNAPSHOT")
+    compileOnly("dev.reactant:reactant:0.1.7-SNAPSHOT")
     compileOnly("org.spigotmc:spigot-api:1.15.1-R0.1-SNAPSHOT")
 
     implementation("net.lingala.zip4j:zip4j:2.1.3")

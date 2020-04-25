@@ -1,6 +1,6 @@
 package dev.reactant.resourcestirrer.example
 
-import dev.reactant.resourcestirrer.itemresource.byClassLoader
+import dev.reactant.resourcestirrer.resourcetype.item.byClassLoader
 import dev.reactant.resourcestirrer.table.ItemResourcesTable
 import dev.reactant.resourcestirrer.table.ResourcesTable
 import org.bukkit.Material

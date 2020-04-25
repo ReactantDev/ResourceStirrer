@@ -1,4 +1,4 @@
-package dev.reactant.resourcestirrer.itemresource
+package dev.reactant.resourcestirrer.resourcetype.item
 
 import dev.reactant.resourcestirrer.model.AnimationMeta
 import dev.reactant.resourcestirrer.model.ItemModel

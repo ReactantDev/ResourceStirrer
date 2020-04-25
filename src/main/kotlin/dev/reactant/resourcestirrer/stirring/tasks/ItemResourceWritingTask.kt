@@ -13,7 +13,6 @@ import io.reactivex.Completable
 import java.io.File
 import java.io.FileReader
 import java.io.FileWriter
-import java.io.InputStream
 import java.util.*
 import kotlin.collections.HashMap
 
@@ -119,8 +118,6 @@ class ItemResourceWritingTask(
                     }
                 }
     }
-
-    class CopyingFile(val inputStream: InputStream, val fileName: String)
 
 }
 

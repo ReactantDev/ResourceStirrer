@@ -1,14 +1,14 @@
-package dev.reactant.resourcestirrer.itemresource
+package dev.reactant.resourcestirrer.resourcetype.item
 
 import dev.reactant.reactant.utils.content.item.itemStackOf
+import dev.reactant.resourcestirrer.resourcetype.ResourceType
 import org.bukkit.Material
 
-interface ItemResource {
+interface ItemResource : ResourceType {
     val baseItem: Material?
     val baseResource: ItemResource?
     val predicate: Map<String, Any>
 
-    val identifier: String
 
     var allocatedCustomModelData: Int?
 

@@ -3,7 +3,7 @@ package dev.reactant.resourcestirrer.stirring
 import dev.reactant.reactant.service.spec.config.Config
 import dev.reactant.resourcestirrer.config.ResourceStirrerConfig
 import dev.reactant.resourcestirrer.config.StirrerCustomDataLock
-import dev.reactant.resourcestirrer.itemresource.ItemResource
+import dev.reactant.resourcestirrer.resourcetype.item.ItemResource
 import org.bukkit.Material
 import java.io.File
 

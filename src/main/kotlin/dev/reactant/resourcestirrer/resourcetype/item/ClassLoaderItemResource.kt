@@ -1,10 +1,10 @@
-package dev.reactant.resourcestirrer.itemresource
+package dev.reactant.resourcestirrer.resourcetype.item
 
 import com.google.gson.Gson
 import dev.reactant.resourcestirrer.model.AnimationMeta
 import dev.reactant.resourcestirrer.model.ItemModel
 import dev.reactant.resourcestirrer.resourceloader.ClassLoaderResourceLoader
-import dev.reactant.resourcestirrer.stirring.tasks.ItemResourceWritingTask
+import dev.reactant.resourcestirrer.resourcetype.ClassLoaderResource
 import dev.reactant.resourcestirrer.table.ItemResourcesTable
 import dev.reactant.resourcestirrer.utils.outputTo
 import org.bukkit.Material
@@ -14,14 +14,14 @@ import java.io.InputStream
 import java.io.InputStreamReader
 
 open class ClassLoaderItemResource(
-        private val resourceLoader: ClassLoaderResourceLoader,
+        resourceLoader: ClassLoaderResourceLoader,
         private val modelPath: String?,
         private val textureLayersPath: Map<String, String>,
         override val identifier: String,
         override val baseItem: Material?,
         override val baseResource: ItemResource?,
         override val predicate: Map<String, Any>
-) : ItemResource, GeneratedModelItemResource<ClassLoaderItemResource> {
+) : ClassLoaderResource(resourceLoader), ItemResource, GeneratedModelItemResource<ClassLoaderItemResource> {
     override val layers = textureLayersPath.keys
     override var itemModel =
             originalItemModel?.apply {
@@ -44,14 +44,14 @@ open class ClassLoaderItemResource(
 
 
     private val modelFileInputStream: InputStream?
-        get() = resourceLoader.getResourceFile("$modelPath.json")
+        get() = getResourceFile("$modelPath.json")
 
     /**
      * Aniatiom meta by layer
      */
     private val animationMetaInputStream: Map<String, InputStream?>
         get() = textureLayersPath.mapNotNull { (layer, texturePath) ->
-            resourceLoader.getResourceFile("$texturePath.png.mcmeta")?.let { input -> layer to input }
+            getResourceFile("$texturePath.png.mcmeta")?.let { input -> layer to input }
         }.toMap()
 
     /**
@@ -107,10 +107,6 @@ open class ClassLoaderItemResource(
             }
         }
     }
-
-    private fun extractFileFromLoader(fromPath: String, toPath: String): Unit? = resourceLoader.getResourceFile(fromPath)
-            ?.let { ItemResourceWritingTask.CopyingFile(it, toPath) }
-            ?.let { it.inputStream.use { input -> input.outputTo(File(it.fileName)) } }
 
     companion object {
         private val DEFAULT_ITEM_MODEL = ItemModel(parent = "item/generated")
