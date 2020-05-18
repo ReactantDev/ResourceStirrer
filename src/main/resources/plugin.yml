@@ -1,0 +1,5 @@
+name: ResourceStirrer
+main: dev.reactant.resourcestirrer.ResourceStirrer
+version: 0.1.7
+depend:
+  - Reactant
