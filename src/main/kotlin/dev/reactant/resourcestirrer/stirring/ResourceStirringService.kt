@@ -15,8 +15,8 @@ import dev.reactant.resourcestirrer.collector.ItemResourceManagingService
 import dev.reactant.resourcestirrer.config.ResourceStirrerConfig
 import dev.reactant.resourcestirrer.config.StirrerCustomDataLock
 import dev.reactant.resourcestirrer.stirring.tasks.ResourceStirringTask
-import io.reactivex.Completable
-import io.reactivex.Single
+import io.reactivex.rxjava3.core.Completable
+import io.reactivex.rxjava3.core.Single
 import java.io.File
 import java.io.FileReader
 

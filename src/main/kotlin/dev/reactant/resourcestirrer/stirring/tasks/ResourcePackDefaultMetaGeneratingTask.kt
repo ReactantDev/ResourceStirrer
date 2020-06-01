@@ -6,7 +6,7 @@ import dev.reactant.reactant.service.spec.config.ConfigService
 import dev.reactant.reactant.service.spec.parser.JsonParserService
 import dev.reactant.resourcestirrer.model.ResourcePackMeta
 import dev.reactant.resourcestirrer.stirring.StirringPlan
-import io.reactivex.Completable
+import io.reactivex.rxjava3.core.Completable
 import java.io.File
 
 @Component

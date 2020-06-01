@@ -9,7 +9,7 @@ import dev.reactant.reactant.core.component.lifecycle.LifeCycleHook
 import dev.reactant.resourcestirrer.ResourceStirrer
 import dev.reactant.resourcestirrer.collector.ItemResourceManagingService
 import dev.reactant.resourcestirrer.stirring.StirringPlan
-import io.reactivex.Completable
+import io.reactivex.rxjava3.core.Completable
 import java.io.File
 import java.io.FileReader
 import java.io.FileWriter

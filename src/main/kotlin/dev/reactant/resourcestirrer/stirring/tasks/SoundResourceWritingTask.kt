@@ -8,7 +8,7 @@ import dev.reactant.reactant.core.component.Component
 import dev.reactant.reactant.core.component.lifecycle.LifeCycleHook
 import dev.reactant.resourcestirrer.collector.SoundResourceManagingService
 import dev.reactant.resourcestirrer.stirring.StirringPlan
-import io.reactivex.Completable
+import io.reactivex.rxjava3.core.Completable
 import java.io.File
 import java.io.FileReader
 import java.io.FileWriter

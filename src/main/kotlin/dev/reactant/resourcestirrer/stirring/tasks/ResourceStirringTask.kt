@@ -2,7 +2,7 @@ package dev.reactant.resourcestirrer.stirring.tasks
 
 import dev.reactant.resourcestirrer.ResourceStirrer
 import dev.reactant.resourcestirrer.stirring.StirringPlan
-import io.reactivex.Completable
+import io.reactivex.rxjava3.core.Completable
 import java.io.File
 
 interface ResourceStirringTask {

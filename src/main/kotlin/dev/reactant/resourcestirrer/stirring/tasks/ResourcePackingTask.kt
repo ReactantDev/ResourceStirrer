@@ -5,7 +5,7 @@ import dev.reactant.reactant.core.component.lifecycle.LifeCycleHook
 import dev.reactant.reactant.extra.file.ReactantTextFileWriterService
 import dev.reactant.resourcestirrer.ResourceStirrer
 import dev.reactant.resourcestirrer.stirring.StirringPlan
-import io.reactivex.Completable
+import io.reactivex.rxjava3.core.Completable
 import net.lingala.zip4j.ZipFile
 import net.lingala.zip4j.model.ZipParameters
 import org.apache.commons.codec.binary.Hex

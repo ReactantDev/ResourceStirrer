@@ -12,7 +12,7 @@ import dev.reactant.resourcestirrer.config.ResourceStirrerConfig
 import dev.reactant.resourcestirrer.stirring.StirringPlan
 import dev.reactant.resourcestirrer.stirring.tasks.ResourcePackingTask
 import dev.reactant.resourcestirrer.stirring.tasks.ResourceStirringTask
-import io.reactivex.Completable
+import io.reactivex.rxjava3.core.Completable
 import org.apache.commons.codec.binary.Hex
 import org.bukkit.Bukkit
 import org.bukkit.event.player.PlayerJoinEvent

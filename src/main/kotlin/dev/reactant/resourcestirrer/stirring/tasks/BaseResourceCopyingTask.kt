@@ -3,7 +3,7 @@ package dev.reactant.resourcestirrer.stirring.tasks
 import dev.reactant.reactant.core.component.Component
 import dev.reactant.reactant.core.component.lifecycle.LifeCycleHook
 import dev.reactant.resourcestirrer.stirring.StirringPlan
-import io.reactivex.Completable
+import io.reactivex.rxjava3.core.Completable
 
 @Component
 class BaseResourceCopyingTask(
