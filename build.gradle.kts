@@ -5,7 +5,7 @@ import java.net.URI
 
 val isSnapshot = true
 group = "dev.reactant"
-version = "0.1.7${if (isSnapshot) "-SNAPSHOT" else ""}"
+version = "0.2.0${if (isSnapshot) "-SNAPSHOT" else ""}"
 
 val kotlinVersion = "1.3.72"
 
