@@ -1,26 +1,26 @@
 package dev.reactant.resourcestirrer.commands
 
-import dev.reactant.reactant.extra.command.PermissionNode
+import dev.reactant.reactant.extra.command.PermissionRoot
 
-internal object ResourceStirrerPermission : PermissionNode("ResourceStirrer") {
-    object LISTING : PermissionNode(child("listing")) {
-        object ITEM : PermissionNode(child("item"))
-        object SOUND : PermissionNode(child("sound"))
+internal object ResourceStirrerPermission : PermissionRoot("ResourceStirrer") {
+    object LISTING : S(prefix) {
+        object ITEM : S(prefix)
+        object SOUND : S(prefix)
     }
 
-    object ADMIN : PermissionNode(child("admin")) {
-        object SOUND : PermissionNode(child("sound")) {
-            object PLAY : PermissionNode(child("play"))
+    object ADMIN : S(prefix) {
+        object SOUND : S(prefix) {
+            object PLAY : S(prefix)
         }
 
-        object ITEM : PermissionNode(child("item")) {
-            object GET : PermissionNode(child("get"))
+        object ITEM : S(prefix) {
+            object GET : S(prefix)
         }
 
-        object PACK : PermissionNode(child("pack")) {
-            object UPDATE : PermissionNode(child("update"))
+        object PACK : S(prefix) {
+            object UPDATE : S(prefix)
         }
 
-        object FIX : PermissionNode(child("fix"))
+        object FIX : S(prefix)
     }
 }

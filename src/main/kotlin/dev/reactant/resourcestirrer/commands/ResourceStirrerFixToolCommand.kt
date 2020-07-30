@@ -14,7 +14,7 @@ import picocli.CommandLine
 internal class ResourceStirrerFixToolCommand(
         private val resourceStirringService: ResourceStirringService
 ) : ReactantCommand() {
-    override fun run() {
+    override fun execute() {
         requirePermission(ResourceStirrerPermission.ADMIN.FIX)
 
         val lostReferenceCustomData = resourceStirringService.latestStirringPlan?.lostReferenceCustomData

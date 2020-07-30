@@ -17,7 +17,7 @@ internal class ResourceStirrerPackUpdateCommand(
             description = ["Run without blocking main thread"])
     var async: Boolean = false
 
-    override fun run() {
+    override fun execute() {
         requirePermission(ResourceStirrerPermission.ADMIN.PACK.UPDATE)
 
         val startAt = System.currentTimeMillis()

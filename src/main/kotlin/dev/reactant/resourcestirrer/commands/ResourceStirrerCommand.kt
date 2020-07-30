@@ -10,7 +10,7 @@ import picocli.CommandLine
         description = []
 )
 internal class ResourceStirrerCommand : ReactantCommand() {
-    override fun run() {
+    override fun execute() {
         requirePermission(ResourceStirrerPermission)
         showUsage()
     }

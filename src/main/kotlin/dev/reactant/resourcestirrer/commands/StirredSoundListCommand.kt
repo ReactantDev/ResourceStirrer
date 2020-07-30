@@ -34,7 +34,7 @@ internal class StirredSoundListCommand(
     var identifierWildcards: ArrayList<String> = arrayListOf()
 
 
-    override fun run() {
+    override fun execute() {
         requirePermission(ResourceStirrerPermission.LISTING.SOUND)
 
         val result = soundResourceManagingService.identifierResources

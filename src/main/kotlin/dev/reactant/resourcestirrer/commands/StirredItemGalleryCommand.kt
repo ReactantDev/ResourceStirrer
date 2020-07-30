@@ -35,7 +35,7 @@ internal class StirredItemGalleryCommand(
     var identifierWildcards: ArrayList<String> = arrayListOf()
 
 
-    override fun run() {
+    override fun execute() {
         requirePermission(ResourceStirrerPermission.LISTING.ITEM)
 
         val result = itemResourceManagingService.identifierResources
