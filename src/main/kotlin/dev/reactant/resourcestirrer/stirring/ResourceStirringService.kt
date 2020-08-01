@@ -6,10 +6,11 @@ import dev.reactant.reactant.core.component.lifecycle.LifeCycleHook
 import dev.reactant.reactant.core.component.lifecycle.LifeCycleInspector
 import dev.reactant.reactant.core.dependency.injection.Inject
 import dev.reactant.reactant.core.dependency.injection.components.Components
+import dev.reactant.reactant.core.dependency.layers.SystemLevel
+import dev.reactant.reactant.extra.parser.GsonJsonParserService
 import dev.reactant.reactant.service.spec.config.Config
 import dev.reactant.reactant.service.spec.config.ConfigService
 import dev.reactant.reactant.service.spec.config.getOrDefault
-import dev.reactant.reactant.service.spec.parser.JsonParserService
 import dev.reactant.resourcestirrer.ResourceStirrer
 import dev.reactant.resourcestirrer.collector.ItemResourceManagingService
 import dev.reactant.resourcestirrer.config.ResourceStirrerConfig
@@ -24,14 +25,11 @@ import java.io.FileReader
 class ResourceStirringService private constructor(
         private val itemResourceService: ItemResourceManagingService,
         private val configService: ConfigService,
-        private val jsonParserService: JsonParserService,
+        private val jsonParserService: GsonJsonParserService,
         @Inject("${ResourceStirrer.configFolder}/config.json")
         private val resourceStirrerConfig: Config<ResourceStirrerConfig>,
         private val unsortedTasks: Components<ResourceStirringTask>
-) : LifeCycleHook, LifeCycleInspector {
-
-
-    private val parser = JsonParser();
+) : LifeCycleHook, LifeCycleInspector, SystemLevel {
 
     override fun onEnable() {
         val startAt = System.currentTimeMillis()
@@ -113,7 +111,7 @@ class ResourceStirringService private constructor(
             if (!resourcePackItemFolder.exists()) setOf()
             else (resourcePackItemFolder.listFiles() ?: arrayOf()).map { file ->
                 FileReader(file).use { reader ->
-                    val resourcePackItemModel = parser.parse(reader).asJsonObject;
+                    val resourcePackItemModel = JsonParser.parseReader(reader).asJsonObject;
                     resourcePackItemModel.getAsJsonArray("overrides")
                             .map { it.asJsonObject }
                             .filter { it.has("custom_model_data") }

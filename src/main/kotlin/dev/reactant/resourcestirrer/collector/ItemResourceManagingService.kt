@@ -4,6 +4,7 @@ import com.google.common.collect.ImmutableMap
 import dev.reactant.reactant.core.component.Component
 import dev.reactant.reactant.core.component.container.ContainerManager
 import dev.reactant.reactant.core.component.lifecycle.LifeCycleHook
+import dev.reactant.reactant.core.dependency.layers.SystemLevel
 import dev.reactant.resourcestirrer.resourcetype.item.ItemResource
 import dev.reactant.resourcestirrer.table.ItemResourcesTable
 import dev.reactant.resourcestirrer.table.ResourcesTable
@@ -15,7 +16,7 @@ import kotlin.reflect.full.isSubclassOf
 @Component
 class ItemResourceManagingService(
         private val containerManager: ContainerManager
-) : LifeCycleHook {
+) : LifeCycleHook, SystemLevel {
     private val _identifierResources = HashMap<String, ItemResource>()
     public val identifierResources: Map<String, ItemResource> get() = ImmutableMap.copyOf(_identifierResources)
 
