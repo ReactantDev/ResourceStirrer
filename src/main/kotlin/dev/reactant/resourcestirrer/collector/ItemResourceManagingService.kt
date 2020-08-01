@@ -4,6 +4,7 @@ import com.google.common.collect.ImmutableMap
 import dev.reactant.reactant.core.component.Component
 import dev.reactant.reactant.core.component.container.ContainerManager
 import dev.reactant.reactant.core.component.lifecycle.LifeCycleHook
+import dev.reactant.reactant.core.dependency.injection.components.Components
 import dev.reactant.reactant.core.dependency.layers.SystemLevel
 import dev.reactant.resourcestirrer.resourcetype.item.ItemResource
 import dev.reactant.resourcestirrer.table.ItemResourcesTable
@@ -15,7 +16,8 @@ import kotlin.reflect.full.isSubclassOf
  */
 @Component
 class ItemResourceManagingService(
-        private val containerManager: ContainerManager
+        private val containerManager: ContainerManager,
+        private val itemResourceProviders: Components<ItemResourceProvider>
 ) : LifeCycleHook, SystemLevel {
     private val _identifierResources = HashMap<String, ItemResource>()
     public val identifierResources: Map<String, ItemResource> get() = ImmutableMap.copyOf(_identifierResources)
@@ -27,7 +29,7 @@ class ItemResourceManagingService(
                 .map { it.kotlin }
                 .filter { it.isSubclassOf(ItemResourcesTable::class) }
                 .mapNotNull { it.objectInstance as? ItemResourcesTable }
-                .toList()
+                .toList().union(itemResourceProviders.map { it.itemResources })
                 .forEach { addItem(it) }
     }
 

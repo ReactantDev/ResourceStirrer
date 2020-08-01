@@ -4,6 +4,7 @@ import com.google.common.collect.ImmutableMap
 import dev.reactant.reactant.core.component.Component
 import dev.reactant.reactant.core.component.container.ContainerManager
 import dev.reactant.reactant.core.component.lifecycle.LifeCycleHook
+import dev.reactant.reactant.core.dependency.injection.components.Components
 import dev.reactant.reactant.core.dependency.layers.SystemLevel
 import dev.reactant.resourcestirrer.resourcetype.sound.SoundResource
 import dev.reactant.resourcestirrer.table.ResourcesTable
@@ -15,7 +16,8 @@ import kotlin.reflect.full.isSubclassOf
  */
 @Component
 class SoundResourceManagingService(
-        private val containerManager: ContainerManager
+        private val containerManager: ContainerManager,
+        private val soundResourceProviders: Components<SoundResourceProvider>
 ) : LifeCycleHook, SystemLevel {
     private val _identifierResources = HashMap<String, SoundResource>()
     val identifierResources get() = ImmutableMap.copyOf(_identifierResources)
@@ -27,7 +29,7 @@ class SoundResourceManagingService(
                 .map { it.kotlin }
                 .filter { it.isSubclassOf(SoundResourcesTable::class) }
                 .mapNotNull { it.objectInstance as? SoundResourcesTable }
-                .toList()
+                .toList().union(soundResourceProviders.map { it.soundResources })
                 .forEach { addSound(it) }
 
     }
