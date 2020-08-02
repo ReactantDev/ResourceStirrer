@@ -10,6 +10,9 @@ import dev.reactant.resourcestirrer.ResourceStirrer
 import dev.reactant.resourcestirrer.collector.ItemResourceManagingService
 import dev.reactant.resourcestirrer.stirring.StirringPlan
 import io.reactivex.rxjava3.core.Completable
+import io.reactivex.rxjava3.core.Observable.fromCallable
+import io.reactivex.rxjava3.kotlin.toObservable
+import io.reactivex.rxjava3.schedulers.Schedulers
 import java.io.File
 import java.io.FileReader
 import java.io.FileWriter
@@ -39,46 +42,52 @@ class ItemResourceWritingTask(
                 .also { if (it.isNotEmpty()) ResourceStirrer.logger.warn("Found ${it.size} resource custom data locks lost their reference, it won't cause any problem normally, use \"/resstir fixtool\" to check.") }
         stirringPlan.stirrerCustomDataLock.content.itemResourceCustomDataLock
                 .filter { itemResourceService.getItem(it.key)?.baseItem != null }
-                .entries
-                .sortedBy { it.value }
-                .forEach { (itemResourceIdentifier, _) ->
-                    val itemResource = itemResourceService.getItem(itemResourceIdentifier)!!
-                    val assetsPath = "${workingDirectory.absolutePath}/assets/${ResourceStirringTask.ASSETS_NAME_SPACE}";
+                .entries.sortedBy { it.value }.toObservable()
+                .flatMap { (itemResourceIdentifier, _) ->
+                    fromCallable {
+                        val itemResource = itemResourceService.getItem(itemResourceIdentifier)!!
+                        val assetsPath = "${workingDirectory.absolutePath}/assets/${ResourceStirringTask.ASSETS_NAME_SPACE}";
 
-                    val outputPrefix = when {
-                        stirringPlan.resourceStirrerConfig.content.uglify && !itemResourceIdentifier.startsWith("default-") -> UUID.randomUUID().toString()
-                        else -> itemResourceIdentifier
-                    }
-                    stirringPlan.identifierPrefixMapping[itemResourceIdentifier] = outputPrefix
+                        val outputPrefix = when {
+                            stirringPlan.resourceStirrerConfig.content.uglify && !itemResourceIdentifier.startsWith("default-") -> UUID.randomUUID().toString()
+                            else -> itemResourceIdentifier
+                        }
+                        stirringPlan.identifierPrefixMapping[itemResourceIdentifier] = outputPrefix
 
-                    val texturePrefix = "$assetsPath/textures/$outputPrefix"
-                    val modelFilePath = "$assetsPath/models/$outputPrefix.json"
+                        val texturePrefix = "$assetsPath/textures/$outputPrefix"
+                        val modelFilePath = "$assetsPath/models/$outputPrefix.json"
 
-                    // Copy model file
-                    val copiedModelFile = File(modelFilePath);
-                    if (!copiedModelFile.parentFile.exists()) copiedModelFile.parentFile.mkdirs()
-                    itemResource.writeModelFile(copiedModelFile.absolutePath)
+                        // Copy model file
+                        val copiedModelFile = File(modelFilePath);
+                        if (!copiedModelFile.parentFile.exists()) copiedModelFile.parentFile.mkdirs()
+                        itemResource.writeModelFile(copiedModelFile.absolutePath)
 
-                    // Replace model file var
-                    copiedModelFile.readText()
-                            .replace("{{prefix}}", "stirred:" + outputPrefix)
-                            .let { copiedModelFile.writeText(it) }
+                        // Replace model file var
+                        copiedModelFile.readText()
+                                .replace("{{prefix}}", "stirred:" + outputPrefix)
+                                .let { copiedModelFile.writeText(it) }
 
-                    // Copy textures file
-                    itemResource.writeTextureFiles(texturePrefix)
+                        // Copy textures file
+                        itemResource.writeTextureFiles(texturePrefix)
+                    }.subscribeOn(Schedulers.computation())
                 }
+                .ignoreElements()
+                .blockingAwait()
+        ResourceStirrer.logger.info("End")
         rewriteMainModelFile(stirringPlan).blockingAwait()
     }
 
     fun rewriteMainModelFile(stirringPlan: StirringPlan): Completable = Completable.fromCallable {
-        stirringPlan.stirrerCustomDataLock.content.itemResourceCustomDataLock.entries
+        val materialModelChanges = stirringPlan.stirrerCustomDataLock.content.itemResourceCustomDataLock.entries
                 .filter { itemResourceService.getItem(it.key) != null }
                 .sortedBy { it.value }
                 .map { itemResourceService.getItem(it.key)!! to it.value }
-                .forEach { (itemResource, customData) ->
-                    val material = customData.split('-')[0];
-                    val customData = customData.split('-')[1].toInt();
+                .groupBy { (_, customData) ->
+                    customData.split('-')[0] // material
+                }
 
+        materialModelChanges.entries.toObservable()
+                .doOnNext { (material, changes) ->
                     val materialModelPath = "${workingDirectory.absolutePath}/assets/minecraft/models/item/$material.json";
                     val materialModelFile = File(materialModelPath)
 
@@ -101,23 +110,28 @@ class ItemResourceWritingTask(
                         }
                     }
 
-                    // edit the original model file
                     parser.parse(FileReader(materialModelFile)).asJsonObject.let {
                         if (!it.has("overrides")) it.add("overrides", JsonArray())
 
                         val overrides = it.getAsJsonArray("overrides");
-                        val overrideObj = JsonObject();
-                        val predicates = HashMap(itemResource.predicate)
-                        predicates["custom_model_data"] = customData;
-                        overrideObj.add("predicate", gson.toJsonTree(predicates).asJsonObject)
-                        val modelPath = stirringPlan.identifierPrefixMapping[itemResource.identifier]
-                        overrideObj.addProperty("model", "${ResourceStirringTask.ASSETS_NAME_SPACE}:$modelPath")
-                        overrides.add(overrideObj);
 
+                        changes.map { (itemResource, customData) ->
+                            val modelPath = stirringPlan.identifierPrefixMapping[itemResource.identifier]
+                            val predicates = HashMap(itemResource.predicate)
+                            predicates["custom_model_data"] = customData.split('-')[1].toInt();
+                            JsonObject().apply {
+                                add("predicate", gson.toJsonTree(predicates).asJsonObject)
+                                addProperty("model", "${ResourceStirringTask.ASSETS_NAME_SPACE}:$modelPath")
+                            }
+                        }.forEach {
+                            overrides.add(it)
+                        }
                         FileWriter(materialModelFile).use { writer -> gson.toJson(it, writer) }
                     }
                 }
+
     }
+
 
 }
 
