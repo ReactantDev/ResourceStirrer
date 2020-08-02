@@ -86,8 +86,9 @@ class ItemResourceWritingTask(
                 .groupBy { (_, customData) ->
                     customData.split('-')[0] // material
                 }
+                .map { (key, value) -> key to value.sortedBy { it.second.split('-')[1].toInt() } }
 
-        materialModelChanges.entries.forEach { (material, changes) ->
+        materialModelChanges.forEach { (material, changes) ->
             val materialModelPath = "${workingDirectory.absolutePath}/assets/minecraft/models/item/$material.json";
             val materialModelFile = File(materialModelPath)
 
