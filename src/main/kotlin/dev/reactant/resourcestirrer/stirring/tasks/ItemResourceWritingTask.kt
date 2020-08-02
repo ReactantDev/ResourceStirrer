@@ -87,49 +87,48 @@ class ItemResourceWritingTask(
                     customData.split('-')[0] // material
                 }
 
-        materialModelChanges.entries.toObservable()
-                .doOnNext { (material, changes) ->
-                    val materialModelPath = "${workingDirectory.absolutePath}/assets/minecraft/models/item/$material.json";
-                    val materialModelFile = File(materialModelPath)
+        materialModelChanges.entries.forEach { (material, changes) ->
+            val materialModelPath = "${workingDirectory.absolutePath}/assets/minecraft/models/item/$material.json";
+            val materialModelFile = File(materialModelPath)
 
-                    // if there have no model file of that material yet
-                    if (!materialModelFile.exists()) {
+            // if there have no model file of that material yet
+            if (!materialModelFile.exists()) {
 
-                        // create folder if not yet created
-                        if (!materialModelFile.parentFile.exists()) materialModelFile.parentFile.mkdirs();
-                        File("${ResourceStirrer.configFolder}/models/item/").let { if (!it.exists()) it.mkdirs() }
-                        val defaultModelFile = File("${ResourceStirrer.configFolder}/models/item/$material.json");
+                // create folder if not yet created
+                if (!materialModelFile.parentFile.exists()) materialModelFile.parentFile.mkdirs();
+                File("${ResourceStirrer.configFolder}/models/item/").let { if (!it.exists()) it.mkdirs() }
+                val defaultModelFile = File("${ResourceStirrer.configFolder}/models/item/$material.json");
 
-                        // if default model (minecraft's model) isn't provided
-                        if (!defaultModelFile.exists()) {
-                            ResourceStirrer.logger.warn("Default model is not existing: \"${defaultModelFile.absoluteFile}\", using empty json object.")
-                            FileWriter(materialModelFile).use { gson.toJson(JsonObject(), it) }
-                        } else {
-                            // copy the default model
-                            val defaultModelJsonObject = parser.parse(FileReader(defaultModelFile)).asJsonObject
-                            FileWriter(materialModelFile).use { gson.toJson(defaultModelJsonObject, it) }
-                        }
-                    }
-
-                    parser.parse(FileReader(materialModelFile)).asJsonObject.let {
-                        if (!it.has("overrides")) it.add("overrides", JsonArray())
-
-                        val overrides = it.getAsJsonArray("overrides");
-
-                        changes.map { (itemResource, customData) ->
-                            val modelPath = stirringPlan.identifierPrefixMapping[itemResource.identifier]
-                            val predicates = HashMap(itemResource.predicate)
-                            predicates["custom_model_data"] = customData.split('-')[1].toInt();
-                            JsonObject().apply {
-                                add("predicate", gson.toJsonTree(predicates).asJsonObject)
-                                addProperty("model", "${ResourceStirringTask.ASSETS_NAME_SPACE}:$modelPath")
-                            }
-                        }.forEach {
-                            overrides.add(it)
-                        }
-                        FileWriter(materialModelFile).use { writer -> gson.toJson(it, writer) }
-                    }
+                // if default model (minecraft's model) isn't provided
+                if (!defaultModelFile.exists()) {
+                    ResourceStirrer.logger.warn("Default model is not existing: \"${defaultModelFile.absoluteFile}\", using empty json object.")
+                    FileWriter(materialModelFile).use { gson.toJson(JsonObject(), it) }
+                } else {
+                    // copy the default model
+                    val defaultModelJsonObject = parser.parse(FileReader(defaultModelFile)).asJsonObject
+                    FileWriter(materialModelFile).use { gson.toJson(defaultModelJsonObject, it) }
                 }
+            }
+
+            parser.parse(FileReader(materialModelFile)).asJsonObject.let {
+                if (!it.has("overrides")) it.add("overrides", JsonArray())
+
+                val overrides = it.getAsJsonArray("overrides");
+
+                changes.map { (itemResource, customData) ->
+                    val modelPath = stirringPlan.identifierPrefixMapping[itemResource.identifier]
+                    val predicates = HashMap(itemResource.predicate)
+                    predicates["custom_model_data"] = customData.split('-')[1].toInt();
+                    JsonObject().apply {
+                        add("predicate", gson.toJsonTree(predicates).asJsonObject)
+                        addProperty("model", "${ResourceStirringTask.ASSETS_NAME_SPACE}:$modelPath")
+                    }
+                }.forEach {
+                    overrides.add(it)
+                }
+                FileWriter(materialModelFile).use { writer -> gson.toJson(it, writer) }
+            }
+        }
 
     }
 
