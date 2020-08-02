@@ -52,7 +52,6 @@ class ItemResourceWritingTask(
                             stirringPlan.resourceStirrerConfig.content.uglify && !itemResourceIdentifier.startsWith("default-") -> UUID.randomUUID().toString()
                             else -> itemResourceIdentifier
                         }
-                        stirringPlan.identifierPrefixMapping[itemResourceIdentifier] = outputPrefix
 
                         val texturePrefix = "$assetsPath/textures/$outputPrefix"
                         val modelFilePath = "$assetsPath/models/$outputPrefix.json"
@@ -69,10 +68,12 @@ class ItemResourceWritingTask(
 
                         // Copy textures file
                         itemResource.writeTextureFiles(texturePrefix)
+
+                        itemResourceIdentifier to outputPrefix
                     }.subscribeOn(Schedulers.computation())
+                }.blockingForEach {
+                    stirringPlan.identifierPrefixMapping[it.first] = it.second
                 }
-                .ignoreElements()
-                .blockingAwait()
         ResourceStirrer.logger.info("End")
         rewriteMainModelFile(stirringPlan).blockingAwait()
     }
