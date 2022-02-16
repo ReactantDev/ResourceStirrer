@@ -21,16 +21,7 @@ class ItemResourceManagingService(
     private val _identifierResources = HashMap<String, ItemResource>()
     public val identifierResources: Map<String, ItemResource> get() = _identifierResources
 
-    override fun onEnable() {
-        containerManager.containers
-                .flatMap { it.reflections.getTypesAnnotatedWith(ResourcesTable::class.java) }
-                .asSequence()
-                .map { it.kotlin }
-                .filter { it.isSubclassOf(ItemResourcesTable::class) }
-                .mapNotNull { it.objectInstance as? ItemResourcesTable }
-                .toList().union(itemResourceProviders.map { it.itemResources })
-                .forEach { addItem(it) }
-    }
+    override fun onEnable() {}
 
     fun addItem(vararg itemResource: ItemResource) {
         itemResource.forEach {
