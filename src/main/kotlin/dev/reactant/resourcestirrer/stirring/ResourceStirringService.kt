@@ -73,7 +73,7 @@ class ResourceStirringService private constructor(
                         val stirringTaskDepth = hashMapOf<ResourceStirringTask, Int>()
                         fun getStirringTaskDepth(task: ResourceStirringTask): Int {
                             stirringTaskDepth[task] = stirringTaskDepth[task]
-                                    ?: (task.dependsOn.map { getStirringTaskDepth(it) }.max() ?: -1) + 1
+                                    ?: (task.dependsOn.map { getStirringTaskDepth(it) }.maxOrNull() ?: -1) + 1
                             return stirringTaskDepth[task]!!
                         }
 

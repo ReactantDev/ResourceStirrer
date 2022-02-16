@@ -7,13 +7,13 @@ val isSnapshot = true
 group = "dev.reactant"
 version = "0.2.0${if (isSnapshot) "-SNAPSHOT" else ""}"
 
-val kotlinVersion = "1.3.72"
+val kotlinVersion = "1.5.20"
 
 plugins {
     java
     `maven-publish`
     signing
-    kotlin("jvm") version "1.3.72"
+    kotlin("jvm") version "1.5.20"
     id("com.github.johnrengelman.shadow") version "5.0.0"
     id("org.jetbrains.dokka") version "0.10.0"
 }
@@ -37,11 +37,12 @@ repositories {
 
 dependencies {
     compileOnly(kotlin("stdlib-jdk8", kotlinVersion))
-    compileOnly("dev.reactant:reactant:0.2.0-SNAPSHOT")
-    compileOnly("org.spigotmc:spigot-api:1.15.2-R0.1-SNAPSHOT")
+    compileOnly("dev.reactant:reactant:0.2.3")
+    compileOnly("org.reflections:reflections:0.9.12")
+    compileOnly("org.spigotmc:spigot-api:1.18.1-R0.1-SNAPSHOT")
 
-    implementation("net.lingala.zip4j:zip4j:2.1.3")
-    implementation("commons-codec:commons-codec:1.13")
+    compileOnly("net.lingala.zip4j:zip4j:2.9.1")
+    compileOnly("commons-codec:commons-codec:1.15")
 
 }
 
@@ -63,7 +64,7 @@ val dokkaJar by tasks.registering(Jar::class) {
 gradle.taskGraph.whenReady {
     if (allTasks.any { it is Sign }) {
         allprojects {
-            extra["signing.keyId"] = findProperty("signingKeyId") as String?;
+            extra["signing.keyId"] = findProperty("signingKeyId") as String?
         }
     }
 }
@@ -75,8 +76,8 @@ val sourcesJar by tasks.registering(Jar::class) {
 }
 
 val shadowJar = (tasks["shadowJar"] as ShadowJar).apply {
-    relocate("net.lingala.zip4j", "dev.reactant.resourcestirrer.zip4j")
-    relocate("org.apache.commons.codec", "dev.reactant.resourcestirrer.codec")
+    // relocate("net.lingala.zip4j", "dev.reactant.resourcestirrer.zip4j")
+    // relocate("org.apache.commons.codec", "dev.reactant.resourcestirrer.codec")
 }
 
 val javadocJar by tasks.registering(Jar::class) {

@@ -1,6 +1,10 @@
 name: ResourceStirrer
 main: dev.reactant.resourcestirrer.ResourceStirrer
 version: 0.1.7
-api-version: 1.15
+api-version: 1.18
 depend:
   - Reactant
+libraries:
+  - net.lingala.zip4j:zip4j:2.9.1
+  - commons-codec:commons-codec:1.15
+  - org.reflections:reflections:0.9.12

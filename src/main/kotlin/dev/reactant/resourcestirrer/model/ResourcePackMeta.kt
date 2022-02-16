@@ -7,7 +7,7 @@ class ResourcePackMeta {
     var pack: PackInfo = PackInfo();
 
     class PackInfo {
-        var pack_format: Int = 4;
+        var pack_format: Int = 8;
         var description: String = "Resource stirrer generated resource pack";
     }
 }

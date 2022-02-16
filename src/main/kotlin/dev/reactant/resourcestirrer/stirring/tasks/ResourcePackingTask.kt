@@ -32,11 +32,14 @@ open class ResourcePackingTask(
         zip.addFolder(workingDirectory, ZipParameters().also { it.isIncludeRootFolder = false })
 
         ResourceStirrer.logger.info("Generating resource pack sha1...")
-        val sha1 = DigestUtils.sha1(FileInputStream(zip.file))
+        val stream = FileInputStream(zip.file)
+        val sha1 = DigestUtils.sha1(stream)
         Hex.encodeHexString(sha1).let {
             ResourceStirrer.logger.info("Resource pack sha1 is $it")
             fileWriterService.write(File(ResourceStirrer.resourcePackHashOutputPath), it).blockingAwait()
         }
         stirringPlan.resourcePackSha1 = sha1;
+        stream.close()
+        zip.close()
     }
 }

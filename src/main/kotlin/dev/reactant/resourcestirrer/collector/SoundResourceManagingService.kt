@@ -23,15 +23,6 @@ class SoundResourceManagingService(
     val identifierResources get() = ImmutableMap.copyOf(_identifierResources)
 
     override fun onEnable() {
-        containerManager.containers
-                .flatMap { it.reflections.getTypesAnnotatedWith(ResourcesTable::class.java) }
-                .asSequence()
-                .map { it.kotlin }
-                .filter { it.isSubclassOf(SoundResourcesTable::class) }
-                .mapNotNull { it.objectInstance as? SoundResourcesTable }
-                .toList().union(soundResourceProviders.map { it.soundResources })
-                .forEach { addSound(it) }
-
     }
 
     fun addSound(vararg soundResource: SoundResource) {

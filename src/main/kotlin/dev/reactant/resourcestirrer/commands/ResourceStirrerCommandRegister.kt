@@ -16,16 +16,16 @@ internal class ResourceStirrerCommandRegister(
         private val commandService: PicocliCommandService,
         private val itemResourceManagingService: ItemResourceManagingService,
         private val soundResourceManagingService: SoundResourceManagingService,
-        private val uiService: ReactantUIService,
-        private val stirredItemGalleryUI: StirredItemGalleryUI,
-        private val stirredSoundListUI: StirredSoundListUI,
+        // private val uiService: ReactantUIService,
+        // private val stirredItemGalleryUI: StirredItemGalleryUI,
+        // private val stirredSoundListUI: StirredSoundListUI,
         private val resourceStirringService: ResourceStirringService
 ) : LifeCycleHook {
     override fun onEnable() {
         register(commandService) {
             command(::ResourceStirrerCommand) {
-                command({ StirredItemGalleryCommand(itemResourceManagingService, stirredItemGalleryUI) })
-                command({ StirredSoundListCommand(soundResourceManagingService, stirredSoundListUI) })
+                //command({ StirredItemGalleryCommand(itemResourceManagingService, stirredItemGalleryUI) })
+                //command({ StirredSoundListCommand(soundResourceManagingService, stirredSoundListUI) })
                 command({ ResourceStirrerPackUpdateCommand(resourceStirringService) })
                 command({ ResourceStirrerFixToolCommand(resourceStirringService) })
             }
